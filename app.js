@@ -52,6 +52,15 @@ function prep(){
     const o={r:r,id:r.id,label:r.label,raw:r.raw,name:r.name,unit:r.unit,strength:r.strength,cat:r.cat,sym:r.sym,off:+r.off===1,chronic:!!(catBy[r.cat]&&+catBy[r.cat].chronic),v:[],c:[],q:[],n:[],A:{v:arr(r.v),c:arr(r.c),q:arr(r.q),n:arr(r.n)}};
     o.key=(r.label+' '+r.raw+' '+r.strength).toLowerCase();o.gtxt=((catBy[r.cat]?catBy[r.cat].name:'')+' '+(symBy[r.sym]?symBy[r.sym].name:'')).toLowerCase();
     return o;});
+  (function(){const g={};D.forEach(o=>{if(o.r.eq)(g[o.r.eq]=g[o.r.eq]||[]).push(o);});
+    Object.keys(g).forEach(k=>{const L=g[k];if(L.length<2)return;
+      const mn=L.find(o=>+o.r.eqf===1)||L[0];
+      L.forEach(o=>{if(o===mn)return;const f=+o.r.eqf||1;
+        ['v','c','n'].forEach(kk=>{mn.A[kk]=mn.A[kk].map((v,i)=>v+(o.A[kk][i]||0));});
+        mn.A.q=mn.A.q.map((v,i)=>v+(o.A.q[i]||0)*f);
+        D.splice(D.indexOf(o),1);});
+      if(mn.r.eqn){mn.label=mn.r.eqn;mn.key=(mn.label+' '+mn.raw+' simvastatin').toLowerCase();}
+      mn.mergeNote=mn.r.eqnote||'';});})();
   const hs=ALLM.filter(x=>x.has).map(x=>x.fy);
   if(!S.fy||FYS.indexOf(S.fy)<0)S.fy=hs.length?Math.max.apply(null,hs):FYS[FYS.length-1];
   applyFY(true);
@@ -244,7 +253,7 @@ function hbars(host,list,max){
 }
 function lineChart(host,list,metric){
   const W=Math.max(300,host.clientWidth||600),H=320;
-  const mx=d3.max(list,d=>d3.max(d.vals))||1;
+  const mx=d3.max(list,d=>Math.max(d3.max(d.vals)||0,d.pvals?d3.max(d.pvals)||0:0))||1;
   const y=d3.scaleLinear([0,mx*1.08],[H-26,12]).nice(),ticks=y.ticks(6);
   const lm=Math.max.apply(null,ticks.map(t=>nf(t).length))*6.6+14;
   const rm=W>=640?160:16;
@@ -254,6 +263,7 @@ function lineChart(host,list,metric){
   d3.range(12).forEach(i=>{if(W>=460||i%2===0)s+='<text class="hp-ax" x="'+x(i)+'" y="'+(H-8)+'" text-anchor="middle">'+esc(MON[i].short)+'</text>';});
   s+='<line class="hp-guide" x1="0" x2="0" y1="6" y2="'+(H-22)+'"/>';
   list.forEach(d=>{
+    if(d.pvals){s+='<path class="hp-prevl" d="'+d.pvals.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join('')+'" fill="none" style="stroke:'+d.color+'" stroke-opacity=".55" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round"/>';}
     const p=d.vals.slice(0,AV).map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join('');
     s+='<path class="hp-line" pathLength="1" d="'+p+'" fill="none" style="stroke:'+d.color+'" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>';
     d.vals.slice(0,AV).forEach((v,i)=>{s+='<circle class="hp-dot" data-i="'+i+'" style="--i:'+i+';fill:'+d.color+'" cx="'+x(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="3.4"/>';});
@@ -265,7 +275,7 @@ function lineChart(host,list,metric){
   }
   const step=(W-rm-lm-6)/11;
   d3.range(12).forEach(i=>{
-    const lines=['<b>'+MON[i].full+' '+MON[i].year+'</b>'].concat(list.map(d=>d.name+': '+unitFmt(d.vals[i],metric)));
+    const lines=['<b>'+MON[i].full+' '+MON[i].year+'</b>'].concat(list.map(d=>d.name+': '+unitFmt(d.vals[i],metric)+(d.pvals?' (ปีก่อน '+unitFmt(d.pvals[i],metric)+')':'')));
     s+='<rect data-col="'+i+'" data-gx="'+x(i).toFixed(1)+'" x="'+(x(i)-step/2).toFixed(1)+'" y="0" width="'+step.toFixed(1)+'" height="'+(H-20)+'" fill="transparent" data-tipx="'+esc(lines.join('\n'))+'"/>';
   });
   s+='</svg>';host.innerHTML=s;
@@ -395,7 +405,7 @@ function renderOverview(){
   hbars($('#ov-cat'),cs2.slice(0,12).map(a=>{const gs=series(rows.filter(x=>gk(x)===a.c.code),m);return {sp:gs.slice(0,AV),dtag:(d=>d==null?'':deltaTag(d.d,true))(deltaInfo(gs)),label:a.c.short,val:a.t,vtxt:baht(a.t)+' · '+pct(a.t/tot,0),color:gcol(a.c.code),attr:'data-act="pickcat" data-k="'+esc(a.c.code)+'"',tip:a.c.name+'\n'+nf(a.t)+' บาท ('+pct(a.t/tot,1)+')'};}));
   $('#ov-more').hidden=!S.more;
   const mb=$('#ov-more-btn');if(mb)mb.textContent=S.more?'ซ่อนรายละเอียดเพิ่มเติม ▴':'ดูรายละเอียดเพิ่มเติม: แผนที่มูลค่า · เทียบก่อน-หลัง · อะไรทำให้ยอดเปลี่ยน · เล่นย้อนหลัง ▾';
-  renderLong(rows,m);
+  renderLong(rows,m);renderPVM(rows);renderFYT(rows);
   if(S.more){renderTreemap(rows,m,ci,tot);renderSlope(rows,m,ci);renderWaterfall(rows,m,ci);renderRace();}else raceStop();
 }
 
@@ -506,6 +516,52 @@ function renderPres(){
 }
 
 
+
+function renderPVM(rows){
+  const host=$('#ov-pvm'),card=host.closest('.hp-card');
+  const yoy=HASP&&S.cmpm==='yoy';let pv,pq,labA,labB;
+  if(yoy){pv=x=>({a:sum(rgp(x.pv)),b:sum(rg(x.v))});pq=x=>({a:sum(rgp(x.pq)),b:sum(rg(x.q))});labA='ปีงบ '+(S.fy-1);labB='ปีงบ '+S.fy;}
+  else{const di=deltaInfo(series(rows,'v'));if(!di){card.hidden=true;return;}const k=di.k,f=a=>{const r=rg(a);return {a:sum(r.slice(0,k)),b:sum(r.slice(-k))};};pv=x=>f(x.v);pq=x=>f(x.q);labA=k+' เดือนแรก';labB=k+' เดือนท้าย';}
+  card.hidden=false;
+  let A=0,B=0,vol=0,pri=0,nw=0,st=0;const LV=[],LP=[],LN=[];
+  rows.forEach(x=>{const v=pv(x),q=pq(x);A+=v.a;B+=v.b;
+    if(v.a<=0&&v.b<=0)return;
+    if(v.a>0&&v.b>0&&q.a>0&&q.b>0){const pa=v.a/q.a,pb=v.b/q.b,ev=(q.b-q.a)*pa,ep=(pb-pa)*q.b;vol+=ev;pri+=ep;LV.push({x:x,e:ev,a:q.a,b:q.b});LP.push({x:x,e:ep,a:pa,b:pb});}
+    else if(v.a<=0&&v.b>0){nw+=v.b;LN.push({x:x,e:v.b,t:'new'});}
+    else if(v.a>0&&v.b<=0){st-=v.a;LN.push({x:x,e:-v.a,t:'stop'});}
+    else pri+=v.b-v.a;});
+  const tot=B-A,dp=A>0?tot/A:null;
+  const parts=[['ปริมาณที่จ่ายเปลี่ยน',vol,'ใช้มากขึ้นหรือน้อยลงในรายการที่มีทั้งสองช่วง (คิดที่ราคาต่อหน่วยของ'+labA+')'],['ราคาต่อหน่วยเปลี่ยน',pri,'ราคาเฉลี่ยต่อหน่วยของรายการเดิมเปลี่ยน (คิดที่ปริมาณของ'+labB+')'],['ยาที่เริ่มใช้ใหม่',nw,'ไม่มีการใช้ใน'+labA+' แต่มีใน'+labB],['ยาที่หยุดใช้',st,'ใช้ใน'+labA+' แต่ไม่มีใน'+labB]];
+  const mx=Math.max.apply(null,parts.map(p=>Math.abs(p[1])).concat([1]));
+  const dom=parts.slice().sort((p,q)=>Math.abs(q[1])-Math.abs(p[1]))[0];
+  $('#ov-pvm-h').textContent='มูลค่าเปลี่ยนเพราะปริมาณหรือราคา · '+labB+' เทียบ '+labA;
+  $('#ov-pvm-n').innerHTML='ช่วง '+esc(rangeLabel())+' มูลค่า'+(tot>=0?'เพิ่มขึ้น ':'ลดลง ')+'<b>'+baht(Math.abs(tot))+' บาท</b>'+(dp!=null&&isFinite(dp)?' ('+pct(Math.abs(dp),1)+')':'')+' · ส่วนที่มีผลมากที่สุดคือ <b>'+esc(dom[0])+'</b> ('+(dom[1]>=0?'+':'−')+baht(Math.abs(dom[1]))+' บาท) · แท่งแดง = ทำให้ค่าใช้จ่ายเพิ่ม แท่งเขียว = ทำให้ลด (ความยาวแท่งเปรียบเทียบกันเฉพาะส่วนที่เปลี่ยน ไม่ใช่สัดส่วนของยอดรวม) · ปริมาณเปรียบเทียบตามหน่วยนับของแต่ละรายการ';
+  const bar=(l,v,sub,tot)=>{const w=Math.max(1.5,Math.abs(v)/mx*100);return '<div class="pvm-r"><div class="pvm-l"><b>'+esc(l)+'</b><span class="hp-mut">'+esc(sub||'')+'</span></div><div class="pvm-t"><i class="'+(tot?'pv-tot':v>0?'pv-up':'pv-dn')+'" style="width:'+(tot?100:w).toFixed(1)+'%"></i></div><div class="pvm-v">'+(tot?nf(v):(v>=0?'+':'−')+nf(Math.abs(v)))+'</div></div>';};
+  let t=bar(labA,A,'มูลค่ารวมของช่วงที่เลือก',true);
+  parts.forEach(p=>{t+=bar(p[0],p[1],p[2]);});
+  t+=bar(labB,B,'มูลค่ารวมของช่วงที่เลือก',true);
+  const top=(L,fmt)=>{const a=L.filter(o=>Math.abs(o.e)>=1).sort((p,q)=>Math.abs(q.e)-Math.abs(p.e)).slice(0,5);return a.length?'<ol class="pvm-o">'+a.map(o=>'<li data-act="detail" data-id="'+o.x.id+'"><span class="n">'+esc(trunc(o.x.label,34))+'</span><b class="'+(o.e>0?'up-bad':'dn-ok')+'">'+(o.e>0?'+':'−')+nf(Math.abs(o.e))+'</b><span class="hp-mut">'+fmt(o)+'</span></li>').join('')+'</ol>':'<div class="hp-empty">ไม่มีรายการ</div>';};
+  t+='<div class="pvm-cols"><div><h3>ปริมาณเปลี่ยนมากสุด</h3>'+top(LV,o=>nf(o.a)+' → '+nf(o.b)+' '+esc(o.x.unit||''))+'</div><div><h3>ราคาต่อหน่วยเปลี่ยนมากสุด</h3>'+top(LP,o=>nf1(o.a)+' → '+nf1(o.b)+' บาท/หน่วย')+'</div><div><h3>ยาที่เริ่ม/หยุดใช้</h3>'+top(LN,o=>o.t==='new'?'เริ่มใช้ใหม่':'หยุดใช้')+'</div></div>';
+  host.innerHTML=t;
+}
+function renderFYT(rows){
+  const host=$('#ov-fy');
+  const ft=FYS.map(f=>{const js=ALLM.map((a,j)=>a.fy===f&&a.has?j:-1).filter(j=>j>=0);
+    const sm=(k,idx)=>{let t=0;rows.forEach(x=>idx.forEach(j=>{t+=x.A[k][j];}));return t;};
+    const L=js.length,v=sm('v',js),c=sm('c',js);let pk=-1,pm=0;js.forEach(j=>{const t=sm('v',[j]);if(t>pm){pm=t;pk=j;}});
+    const act=rows.filter(x=>js.some(j=>x.A.v[j]>0)).length;
+    return {f:f,L:L,js:js,v:v,c:c,act:act,pk:pk,pm:pm};});
+  const has=ft.filter(o=>o.L>0);
+  if(!has.length){host.innerHTML='';return;}
+  let h='<div class="hp-tw" style="max-height:none"><table><thead><tr><th>ปีงบประมาณ</th><th>เดือนที่มีข้อมูล</th><th>มูลค่า (บาท)</th><th>ต้นทุน (บาท)</th><th>เฉลี่ย/เดือน</th><th>รายการที่มีการใช้</th><th>เทียบปีก่อน (เดือนเดียวกัน)</th><th>เดือนสูงสุด</th></tr></thead><tbody>';
+  has.slice().reverse().forEach(o=>{
+    const pi=ft.findIndex(z=>z.f===o.f-1),p=pi>=0?ft[pi]:null;let yy='—';
+    if(p&&p.L>0){const idx=o.js.map(j=>ALLM[j].fm),pj=p.js.filter(j=>idx.indexOf(ALLM[j].fm)>=0);
+      let a=0,b=0;rows.forEach(x=>{pj.forEach(j=>{a+=x.A.v[j];});o.js.forEach(j=>{if(pj.some(k=>ALLM[k].fm===ALLM[j].fm))b+=x.A.v[j];});});
+      yy=a>0?deltaTag(b/a-1,true)+' <span class="hp-mut">('+nf(b)+' เทียบ '+nf(a)+')</span>':'—';}
+    h+='<tr data-act="fy" data-y="'+o.f+'"'+(o.f===S.fy?' class="sel"':'')+'><td><b>'+o.f+'</b>'+(o.f===S.fy?' <span class="hp-mut">(ที่เลือก)</span>':'')+'</td><td>'+o.L+' / 12'+(o.L<12?' <span class="hp-mut">(ถึง '+esc(ALLM[o.js[o.L-1]].short)+')</span>':'')+'</td><td>'+nf(o.v)+'</td><td>'+nf(o.c)+'</td><td>'+nf(o.v/o.L)+'</td><td>'+o.act+'</td><td>'+yy+'</td><td>'+(o.pk>=0?esc(ALLM[o.pk].short+' '+String(ALLM[o.pk].year).slice(2))+' ('+nf(o.pm)+')':'—')+'</td></tr>';});
+  host.innerHTML=h+'</tbody></table></div>';
+}
 
 function renderLong(rows,m){
   const host=$('#ov-long'),card=host.closest('.hp-card');
@@ -687,10 +743,10 @@ function renderGroups(){
   const hx=cs.filter(a=>a.t>0);
   const gm=cs.filter(a=>a.di&&isFinite(a.di.d)&&a.t>=5000);const gu=gm.slice().sort((p,q)=>q.di.d-p.di.d)[0],gd=gm.slice().sort((p,q)=>p.di.d-q.di.d)[0];
   headline($('#gr-head'),'info','กลุ่มใหญ่สุด: <b>'+esc(hx[0]?hx[0].c.name:'—')+'</b> ('+(hx[0]&&all?pct(hx[0].t/all,0):'—')+' ของทั้งหมด)'+(gu&&gu.di.d>.1?' · เพิ่มเร็วสุด: <b class="up-bad">'+esc(gu.c.short)+' ▲'+pct(gu.di.d,0)+'</b>':'')+(gd&&gd.di.d<-.1?' · ลดมากสุด: <b class="dn-ok">'+esc(gd.c.short)+' ▼'+pct(-gd.di.d,0)+'</b>':''));
-  let h='<table><thead><tr><th>กลุ่มยา</th>'+MON.map(x=>'<th>'+esc(x.short)+'</th>').join('')+'<th>รวม</th><th>แนวโน้ม</th></tr></thead><tbody>';
+  let h='<table><thead><tr><th>กลุ่มยา</th>'+MON.map(x=>'<th>'+esc(x.short)+'</th>').join('')+'<th>รวม</th><th>แนวโน้ม</th>'+(HASP?'<th>เทียบปีงบ '+(S.fy-1)+'</th>':'')+'</tr></thead><tbody>';
   hx.forEach(a=>{
     const mx=d3.max(a.s)||1;
-    h+='<tr><td title="'+esc(a.c.name)+'">'+esc(a.c.short)+'</td>'+a.s.map((v,i)=>{const p=Math.round(v/mx*85);const inr=i+1>=S.from&&i+1<=S.to;return '<td data-tip="'+esc(a.c.name+' · '+MON[i].label+'\n'+nf(v)+' บาท')+'" style="--i:'+i+';background:color-mix(in srgb,'+gcol(a.c.code)+' '+p+'%,transparent);'+(inr?'':'opacity:.4')+'">'+(v>0?Math.round(v/1000):'·')+'</td>';}).join('')+'<td class="t">'+nf(a.t)+'</td><td>'+(a.di?deltaTag(a.di.d,true):'—')+'</td></tr>';
+    h+='<tr><td title="'+esc(a.c.name)+'">'+esc(a.c.short)+'</td>'+a.s.map((v,i)=>{const p=Math.round(v/mx*85);const inr=i+1>=S.from&&i+1<=S.to;return '<td data-tip="'+esc(a.c.name+' · '+MON[i].label+'\n'+nf(v)+' บาท')+'" style="--i:'+i+';background:color-mix(in srgb,'+gcol(a.c.code)+' '+p+'%,transparent);'+(inr?'':'opacity:.4')+'">'+(v>0?Math.round(v/1000):'·')+'</td>';}).join('')+'<td class="t">'+nf(a.t)+'</td><td>'+(a.di?deltaTag(a.di.d,true):'—')+'</td>'+(HASP?'<td>'+(a.yy!=null?deltaTag(a.yy,true):'—')+'</td>':'')+'</tr>';
   });
   h+='</tbody></table>';$('#gr-heat').innerHTML=h;
 }
@@ -698,31 +754,33 @@ function renderGroups(){
 function renderStack(){
   const m=S.metric,host=$('#gr-stack');
   const a=series(D.filter(x=>x.chronic),m),b=series(D.filter(x=>!x.chronic),m);
-  const tt=a.map((v,i)=>v+b[i]),mx=d3.max(tt)||1;
+  const n=AV,tt=a.map((v,i)=>v+b[i]).slice(0,n),mx=d3.max(tt)||1;a.length=n;
+  const pcy=HASP&&S.cmpm==='yoy',pa0=pcy?series(D.filter(x=>x.chronic),'p'+m):null,pb0=pcy?series(D.filter(x=>!x.chronic),'p'+m):null,pt0=pcy?pa0.map((v,i)=>v+pb0[i]):null;
   const W=Math.max(300,host.clientWidth||600),H=250;
-  const y=d3.scaleLinear([0,mx*1.08],[H-26,10]).nice(),ticks=y.ticks(5);
+  const y=d3.scaleLinear([0,Math.max(mx,pt0?d3.max(pt0)||0:0)*1.08],[H-26,10]).nice(),ticks=y.ticks(5);
   const lm=Math.max.apply(null,ticks.map(t=>nf(t).length))*6.6+14;
-  const x=d3.scalePoint(d3.range(12),[lm+4,W-14]);
+  const x=d3.scalePoint(d3.range(n),[lm+4,W-14]);
   const c1=colors()[0]||'var(--color-fg)',c2=colors()[1]||'var(--cds-chart-muted)';
   let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="สัดส่วนโรคเรื้อรังรายเดือน"><defs><linearGradient id="gs1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:'+c1+';stop-opacity:.9"/><stop offset="1" style="stop-color:'+c1+';stop-opacity:.45"/></linearGradient><linearGradient id="gs2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:'+c2+';stop-opacity:.85"/><stop offset="1" style="stop-color:'+c2+';stop-opacity:.4"/></linearGradient></defs>';
   ticks.forEach(t=>{s+='<line x1="'+lm+'" x2="'+(W-8)+'" y1="'+y(t)+'" y2="'+y(t)+'" style="stroke:var(--cds-chart-grid)"/><text class="hp-ax" x="'+(lm-6)+'" y="'+(y(t)+4)+'" text-anchor="end">'+nf(t)+'</text>';});
   const pa=a.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join('');
   const pt=tt.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join('');
-  const back=a.map((v,i)=>'L'+x(11-i).toFixed(1)+' '+y(a[11-i]).toFixed(1)).join('');
-  const base=d3.range(12).map(i=>'L'+x(11-i).toFixed(1)+' '+y(0)).join('');
-  s+='<path class="hp-area" d="'+pt+d3.range(12).map(i=>'L'+x(11-i).toFixed(1)+' '+y(a[11-i]).toFixed(1)).join('')+'Z" style="fill:url(#gs2)"/>';
+  const back=a.map((v,i)=>'L'+x(n-1-i).toFixed(1)+' '+y(a[n-1-i]).toFixed(1)).join('');
+  const base=d3.range(n).map(i=>'L'+x(n-1-i).toFixed(1)+' '+y(0)).join('');
+  s+='<path class="hp-area" d="'+pt+d3.range(n).map(i=>'L'+x(n-1-i).toFixed(1)+' '+y(a[n-1-i]).toFixed(1)).join('')+'Z" style="fill:url(#gs2)"/>';
   s+='<path class="hp-area" d="'+pa+base+'Z" style="fill:url(#gs1)"/>';
+  if(pt0)s+='<path class="hp-prevl" d="'+pt0.map((v,i)=>(i?'L':'M')+x(i%n<n?i:0).toFixed(1)+' '+y(v).toFixed(1)).slice(0,n).join('')+'" fill="none" style="stroke:'+c2+'" stroke-width="2" stroke-dasharray="5 4"/><path class="hp-prevl" d="'+pa0.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).slice(0,n).join('')+'" fill="none" style="stroke:'+c1+'" stroke-width="2" stroke-dasharray="5 4"/>';
   s+='<path class="hp-line" pathLength="1" d="'+pt+'" fill="none" style="stroke:'+c2+'" stroke-width="2"/><path class="hp-line" pathLength="1" d="'+pa+'" fill="none" style="stroke:'+c1+'" stroke-width="2.4"/>';
-  d3.range(12).forEach(i=>{if(W>=460||i%2===0)s+='<text class="hp-ax" x="'+x(i)+'" y="'+(H-8)+'" text-anchor="middle">'+esc(MON[i].short)+'</text>';});
+  d3.range(n).forEach(i=>{if(W>=460||i%2===0)s+='<text class="hp-ax" x="'+x(i)+'" y="'+(H-8)+'" text-anchor="middle">'+esc(MON[i].short)+'</text>';});
   s+='<line class="hp-guide" x1="0" x2="0" y1="6" y2="'+(H-22)+'"/>';
-  const step=(W-lm-18)/11;
-  d3.range(12).forEach(i=>{const t=tt[i]||1;
+  const step=(W-lm-18)/Math.max(1,n-1);
+  d3.range(n).forEach(i=>{const t=tt[i]||1;
     s+='<rect data-col="'+i+'" data-gx="'+x(i).toFixed(1)+'" x="'+(x(i)-step/2).toFixed(1)+'" y="0" width="'+step.toFixed(1)+'" height="'+(H-20)+'" fill="transparent" data-tip="'+esc(MON[i].full+' '+MON[i].year+'\nโรคเรื้อรัง: '+nf(a[i])+' บาท ('+pct(a[i]/t,0)+')\nยากลุ่มอื่น: '+nf(b[i])+' บาท ('+pct(b[i]/t,0)+')')+'"/>';});
   s+='</svg>';host.innerHTML=s;
   const sh=a.map((v,i)=>tt[i]?v/tt[i]:0);
   $('#gr-stack-h').textContent='ยาโรคเรื้อรังคิดเป็น '+pct(sum(a)/(sum(tt)||1),0)+' ของ'+MN[m]+'ทั้งปี'+(d3.max(sh)-d3.min(sh)>.06?' · สัดส่วนแกว่ง '+pct(d3.min(sh),0)+'–'+pct(d3.max(sh),0):' · สัดส่วนคงที่ตลอดปี');
   $('#gr-stack-n').textContent='ทั้งโรงพยาบาล · ยาโรคเรื้อรังคิดเป็น '+pct(sum(a)/(sum(tt)||1),0)+' ของ'+MN[m]+'ทั้งปี (ต่ำสุด '+pct(d3.min(sh),0)+' สูงสุด '+pct(d3.max(sh),0)+') · '+'ส่วนล่าง = โรคเรื้อรัง ส่วนบน = ยากลุ่มอื่น';
-  $('#gr-stack-lg').innerHTML='<span style="--c:'+c1+'">ยาโรคเรื้อรัง</span><span style="--c:'+c2+'">ยากลุ่มอื่น</span>';
+  $('#gr-stack-lg').innerHTML='<span style="--c:'+c1+'">ยาโรคเรื้อรัง</span><span style="--c:'+c2+'">ยากลุ่มอื่น</span>'+(pcy?'<span class="ln dash" style="--c:'+c2+'">ปีงบ '+(S.fy-1)+' (เส้นประ: รวม / โรคเรื้อรัง)</span>':'');
 }
 
 /* ---------- drugs table ---------- */
@@ -786,7 +844,7 @@ function renderDetail(){
   const di=deltaInfo(arr);const c=catBy[x.cat];
   const inCmp=S.cmp.indexOf(x.id)>=0;
   host.className='hp-detail';
-  host.innerHTML='<div class="hp-dh"><div><div class="hp-lab">กลุ่มโรค: '+esc(c?c.name:x.cat)+' · อาการ: '+esc(symBy[x.sym]?symBy[x.sym].name:'')+(x.off?' · <span class="b-warn">ชื่อรายการระบุว่าไม่มีในบัญชียา/รพ.</span>':'')+'</div><h2>'+esc(x.label)+'</h2><div class="hp-note">หน่วยนับ: '+esc(x.unit||'—')+' · ชื่อในรายงาน: '+esc(x.raw)+'</div></div><div class="hp-inl"><button class="hp-btn pri" data-act="cmpadd" data-id="'+x.id+'" '+(inCmp?'disabled':'')+'>'+(inCmp?'อยู่ในการเปรียบเทียบแล้ว':'เพิ่มเข้าเปรียบเทียบ')+'</button><button class="hp-btn" data-act="close">ปิด</button></div></div>'+
+  host.innerHTML='<div class="hp-dh"><div><div class="hp-lab">กลุ่มโรค: '+esc(c?c.name:x.cat)+' · อาการ: '+esc(symBy[x.sym]?symBy[x.sym].name:'')+(x.off?' · <span class="b-warn">ชื่อรายการระบุว่าไม่มีในบัญชียา/รพ.</span>':'')+'</div><h2>'+esc(x.label)+'</h2><div class="hp-note">หน่วยนับ: '+esc(x.unit||'—')+' · ชื่อในรายงาน: '+esc(x.raw)+'</div>'+(x.mergeNote?'<div class="hp-note"><b>หมายเหตุ:</b> '+esc(x.mergeNote)+'</div>':'')+'</div><div class="hp-inl"><button class="hp-btn pri" data-act="cmpadd" data-id="'+x.id+'" '+(inCmp?'disabled':'')+'>'+(inCmp?'อยู่ในการเปรียบเทียบแล้ว':'เพิ่มเข้าเปรียบเทียบ')+'</button><button class="hp-btn" data-act="close">ปิด</button></div></div>'+
    '<div class="hp-kpis">'+kpi('รวม'+MN[dm]+' ('+esc(rangeLabel())+')',unitFmt(tot,dm)+(dm==='q'?' <small>'+esc(x.unit)+'</small>':dm==='n'?'':' <small>บาท</small>'),dm==='v'||dm==='c'?'ต้นทุน '+baht(sum(rg(x.c)))+' · ปริมาณ '+nf(sum(rg(x.q)))+' '+esc(x.unit):'')+kpi('เฉลี่ยต่อเดือน',unitFmt(avg,dm),'จาก '+r.length+' เดือน')+kpi('เดือนสูงสุด',esc(mlab(S.from-1+pk)),unitFmt(r[pk],dm))+kpi('แนวโน้ม',di?deltaTag(di.d,true):'—',di?di.k+' เดือนท้าย เทียบ '+di.k+' เดือนแรก':'')+
    (HASP?(()=>{const py=sum(rgp(x['p'+dm]));return kpi('เทียบปีงบ '+(S.fy-1),py>0?deltaTag(tot/py-1,true):(tot>0?deltaTag(Infinity,true):'—'),'ช่วงเดียวกัน '+unitFmt(py,dm));})():'')+
    (dm==='v'||dm==='c'?kpi('ราคาเฉลี่ยต่อหน่วย',sum(rg(x.q))>0?nf1(sum(rg(x[dm]))/sum(rg(x.q)))+' <small>บาท</small>':'—',dm==='v'?'มูลค่า ÷ ปริมาณ':'ต้นทุน ÷ ปริมาณ'):'')+'</div>'+
@@ -805,11 +863,11 @@ function renderCompare(){
   const host=$('#cm-chart');
   if(!list.length){host.innerHTML='<div class="hp-empty">ยังไม่ได้เลือกยา ค้นหาชื่อยาด้านบน หรือกด “เติมยา 5 อันดับแรกของกลุ่มที่เลือก”</div>';$('#cm-tbl').innerHTML='';$('#cm-note').textContent='';return;}
   const m=S.cm;
-  lineChart(host,list.map((x,i)=>({name:x.name,vals:x[m],color:pal[i%pal.length]||'var(--color-fg)'})),m);
-  $('#cm-note').textContent=m==='q'?'ปริมาณเทียบจากหน่วยนับของแต่ละรายการ หากหน่วยต่างกัน (เช่น เม็ด กับ ขวด) ให้ดูมูลค่าเป็นหลัก':'เส้นแสดงค่ารายเดือนตลอดปีงบประมาณ ตารางด้านล่างคำนวณเฉพาะช่วง '+rangeLabel();
-  let h='<table><thead><tr><th>ชื่อยา</th><th>กลุ่ม</th><th>หน่วย</th><th>รวมในช่วง</th><th>เฉลี่ย/เดือน</th><th>เดือนสูงสุด</th><th>แนวโน้ม</th><th>เปลี่ยนแปลง</th></tr></thead><tbody>';
+  lineChart(host,list.map((x,i)=>({name:x.name,vals:x[m],pvals:HASP&&S.cmpm==='yoy'?x['p'+m]:null,color:pal[i%pal.length]||'var(--color-fg)'})),m);
+  $('#cm-note').textContent=m==='q'?'ปริมาณเทียบจากหน่วยนับของแต่ละรายการ หากหน่วยต่างกัน (เช่น เม็ด กับ ขวด) ให้ดูมูลค่าเป็นหลัก':'เส้นทึบ = ปีงบ '+S.fy+(HASP&&S.cmpm==='yoy'?' · เส้นประสีเดียวกัน = ปีงบ '+(S.fy-1):'')+' · เส้นแสดงค่ารายเดือนตลอดปีงบประมาณ ตารางด้านล่างคำนวณเฉพาะช่วง '+rangeLabel();
+  let h='<table><thead><tr><th>ชื่อยา</th><th>กลุ่ม</th><th>หน่วย</th><th>รวมในช่วง</th><th>เฉลี่ย/เดือน</th><th>เดือนสูงสุด</th><th>แนวโน้ม</th><th>เปลี่ยนแปลง</th>'+(HASP?'<th>เทียบปีงบ '+(S.fy-1)+'</th>':'')+'</tr></thead><tbody>';
   list.forEach((x,i)=>{const r=rg(x[m]);const t=sum(r);let pk=0;r.forEach((v,j)=>{if(v>r[pk])pk=j;});const di=deltaInfo(x[m]);
-    h+='<tr data-act="detail" data-id="'+x.id+'"><td class="nm"><i style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;background:'+(pal[i%pal.length]||'var(--color-fg)')+'"></i>'+esc(x.label)+'</td><td>'+esc(gshort(x))+'</td><td class="hp-mut">'+esc(x.unit)+'</td><td>'+nf(t)+'</td><td>'+nf(r.length?t/r.length:0)+'</td><td>'+esc(mlab(S.from-1+pk))+' ('+nf(r[pk])+')</td><td>'+spark(x[m].slice(0,AV),84,22,pal[i%pal.length])+'</td><td>'+(di?deltaTag(di.d,true):'—')+'</td></tr>';});
+    h+='<tr data-act="detail" data-id="'+x.id+'"><td class="nm"><i style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;background:'+(pal[i%pal.length]||'var(--color-fg)')+'"></i>'+esc(x.label)+'</td><td>'+esc(gshort(x))+'</td><td class="hp-mut">'+esc(x.unit)+'</td><td>'+nf(t)+'</td><td>'+nf(r.length?t/r.length:0)+'</td><td>'+esc(mlab(S.from-1+pk))+' ('+nf(r[pk])+')</td><td>'+spark(x[m].slice(0,AV),84,22,pal[i%pal.length])+'</td><td>'+(di?deltaTag(di.d,true):'—')+'</td>'+(HASP?'<td>'+(()=>{const p=sum(rgp(x['p'+m]));return p>0?deltaTag(t/p-1,true):(t>0?deltaTag(Infinity,true):'—');})()+'</td>':'')+'</tr>';});
   $('#cm-tbl').innerHTML=h+'</tbody></table>';
 }
 
@@ -840,6 +898,19 @@ function computeAlerts(rows){
 function alertCard(kind,badge,cls,x,text){
   return '<article class="hp-al sv-'+cls.slice(2)+'"><div class="hp-al-h"><span class="hp-badge '+cls+'">'+badge+'</span><b>'+esc(x.label)+'</b><span class="hp-mut">'+esc(gshort(x))+'</span></div><p>'+text+'</p><div class="sp">'+spark(x.v.slice(0,AV),92,28,cls==='b-ok'?'var(--color-ok)':cls==='b-bad'?'var(--color-bad)':C0())+'<button class="hp-btn" data-act="detail" data-id="'+x.id+'">ดูรายเดือน</button></div></article>';
 }
+function onlyCard(rows){
+  if(!HASP)return '';
+  const nw=[],gone=[];
+  rows.forEach(x=>{const c=sum(x.v.slice(0,AV)),p=sum(x.pv);if(c>0&&p<=0)nw.push({x:x,v:c,q:sum(x.q.slice(0,AV))});else if(p>0&&c<=0)gone.push({x:x,v:p,q:sum(x.pq)});});
+  nw.sort((a,b)=>b.v-a.v);gone.sort((a,b)=>b.v-a.v);
+  const tn=sum(nw.map(o=>o.v)),tg=sum(gone.map(o=>o.v));
+  const li=(L,tag)=>L.length?'<ol class="pvm-o">'+L.slice(0,12).map(o=>'<li data-act="detail" data-id="'+o.x.id+'"><span class="n">'+esc(trunc(o.x.label,34))+'</span><b>'+nf(o.v)+'</b><span class="hp-mut">'+esc(gshort(o.x))+' · '+nf(o.q)+' '+esc(o.x.unit||'')+'</span></li>').join('')+(L.length>12?'<li class="hp-mut">และอีก '+(L.length-12)+' รายการ</li>':'')+'</ol>':'<div class="hp-empty">ไม่มีรายการ</div>';
+  const cg={};nw.forEach(o=>{const k=gshort(o.x);(cg[k]=cg[k]||{n:0,g:0,nn:0,gn:0}).n+=o.v;cg[k].nn++;});gone.forEach(o=>{const k=gshort(o.x);(cg[k]=cg[k]||{n:0,g:0,nn:0,gn:0}).g+=o.v;cg[k].gn++;});
+  const sub=Object.keys(cg).filter(k=>cg[k].n>0&&cg[k].g>0).sort((a,b)=>Math.min(cg[b].n,cg[b].g)-Math.min(cg[a].n,cg[a].g)).slice(0,6);
+  return '<div class="hp-card"><h2>ยาที่มีเฉพาะบางปีงบ <span class="hp-mut">(ใหม่ '+nw.length+' · หายไป '+gone.length+')</span></h2><p class="hp-note">เทียบปีงบ '+S.fy+' (ถึง '+esc(MON[AV-1].short)+') กับปีงบ '+(S.fy-1)+' ทั้งปี · ยาใหม่รวม <b>'+baht(tn)+' บาท</b> ยาที่หายไปรวม <b>'+baht(tg)+' บาท</b> · ถ้าเป็นยาตัวเดียวกันที่เปลี่ยนความแรง ยี่ห้อ หรือวิธีใช้ การเทียบรายตัวจะดูเหมือนหยุดแล้วพุ่ง ควรตรวจก่อนสรุป (ยาที่รวมให้แล้วคือ simvastatin 20 มก. กับ 40 มก.)</p>'
+    +'<div class="pvm-cols"><div><h3>ยาใหม่ในปีนี้ (ไม่มีใช้ปีก่อน)</h3>'+li(nw)+'</div><div><h3>ยาที่ปีนี้ไม่พบการใช้</h3>'+li(gone)+'</div><div><h3>กลุ่มที่มีทั้งเข้าและออก (อาจทดแทนกัน)</h3>'+(sub.length?'<ol class="pvm-o">'+sub.map(k=>'<li><span class="n">'+esc(k)+'</span><b>'+(cg[k].n>=cg[k].g?'+':'−')+nf(Math.abs(cg[k].n-cg[k].g))+'</b><span class="hp-mut">เข้า '+cg[k].nn+' รายการ '+nf(cg[k].n)+' · ออก '+cg[k].gn+' รายการ '+nf(cg[k].g)+'</span></li>').join('')+'</ol>':'<div class="hp-empty">ไม่มี</div>')+'</div></div></div>';
+}
+
 function renderAlerts(){
   const rows=scope();const A=computeAlerts(rows);
   const total=sum(series(rows,'v'));
@@ -863,6 +934,7 @@ function renderAlerts(){
     return alertCard('spike','พุ่งสูง','b-bad',x,'เดือน<b>'+esc(mlab(a.b.i))+'</b> มูลค่า <b>'+nf(x.v[a.b.i])+' บาท</b> '+(isFinite(ratio)?'สูงเป็น <b>'+ratio.toFixed(1)+' เท่า</b> ของเดือนทั่วไป (ปกติราว '+nf(med)+' บาท)':'ทั้งที่เดือนอื่นแทบไม่มีการใช้เลย')+' ส่วนที่เกินราว '+nf(a.ex)+' บาท'+(a.n>1?' (เกิดขึ้น '+a.n+' เดือน)':'')+' ทั้งปีรวม '+nf(sum(x.v))+' บาท');}));
   h+=sec('แนวโน้มใช้เพิ่มขึ้น','เปรียบเทียบ 3 เดือนท้ายปีงบประมาณ ('+mlab(AV-3)+' – '+mlab(AV-1)+') กับ 3 เดือนแรก ('+mlab(0)+' – '+mlab(2)+') ลองทบทวนข้อบ่งใช้ ทางเลือกที่ราคาต่ำกว่า และปริมาณต่อใบสั่งดู',lim(A.rise).map(a=>alertCard('rise','เพิ่มขึ้น','b-bad',a.x,'3 เดือนแรกใช้ '+nf(a.a)+' บาท 3 เดือนท้ายเป็น <b>'+nf(a.b)+' บาท</b> '+(a.a>0?'(เพิ่มขึ้น <b>'+pct(a.b/a.a-1,0)+'</b>)':'(ช่วงแรกไม่มีการใช้)')+' ต่างกัน +'+nf(a.b-a.a)+' บาท')));
   h+=sec('ใช้ลดลงหรือหยุดจ่าย','ลดลงได้ทั้งจากมาตรการที่ทำไว้หรือการเปลี่ยนไปใช้ยาตัวอื่น แต่ก็อาจเป็นเพราะยาขาดสต็อกหรือเปลี่ยนบัญชียา ควรเช็กก่อนสรุป',lim(A.stop.concat(A.fall).sort((p,q)=>q.ex-p.ex)).map(a=>alertCard('fall',a.b===0?'หยุดจ่าย':'ลดลง','b-ok',a.x,'3 เดือนแรกใช้ '+nf(a.a)+' บาท 3 เดือนท้ายเหลือ <b>'+nf(a.b)+' บาท</b> '+(a.b===0?'(ไม่มีการจ่ายเลยใน 3 เดือนท้าย)':'(ลดลง <b>'+pct(1-a.b/a.a,0)+'</b>)')+' ต่างกัน −'+nf(a.a-a.b)+' บาท')));
+  h+=onlyCard(rows);
   h+=sec('ชื่อรายการระบุว่าไม่มีในบัญชียา/รพ. แต่ยังมีการจ่าย','เรียงตามมูลค่า อาจเป็นยานอกบัญชีที่จัดหาเฉพาะราย ยาที่คัดออกแล้วแต่ชื่อในระบบยังไม่เปลี่ยน หรือยาที่ต้องส่งต่อ น่าตรวจดู เพราะเป็นจุดที่คุมค่าใช้จ่ายได้',lim(A.off).map(x=>alertCard('off','นอกบัญชี?','b-warn',x,'ทั้งปีรวม <b>'+nf(sum(x.v))+' บาท</b> ปริมาณ '+nf(sum(x.q))+' '+esc(x.unit)+' จ่ายใน '+x.v.filter(t=>t>0).length+' เดือน (ชื่อในระบบ: '+esc(x.raw)+')')));
   const idleTxt=A.idle.length?'<div class="hp-card"><h2>ไม่มีการเคลื่อนไหวทั้งปี <span class="hp-mut">('+A.idle.length+')</span></h2><p class="hp-note">รายการที่มีในรายงานแต่ไม่มีการจ่ายเลย 12 เดือน ใช้ประกอบการทบทวนบัญชียาและลดรายการค้างระบบ</p><div class="hp-inl" style="gap:6px">'+A.idle.slice(0,60).map(x=>'<span class="hp-badge b-mut" title="'+esc(x.raw)+'">'+esc(x.name)+'</span>').join('')+(A.idle.length>60?'<span class="hp-note">และอีก '+(A.idle.length-60)+' รายการ</span>':'')+'</div></div>':'';
   $('#al-body').innerHTML=h+idleTxt;

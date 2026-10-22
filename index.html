@@ -371,6 +371,24 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
 
 .hp-lg .ln.dash::before{background:none;border-top:2px dashed var(--c);height:0}
 .hp-prevl{pointer-events:none}
+
+.pvm-r{display:grid;grid-template-columns:minmax(150px,1.2fr) 2fr minmax(80px,auto);gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--color-border-line)}
+.pvm-l{display:flex;flex-direction:column;font-size:var(--cds-font-size-caption);line-height:1.35}
+.pvm-t{height:14px;background:color-mix(in srgb,var(--color-fg) 6%,transparent);border-radius:7px;overflow:hidden}
+.pvm-t i{display:block;height:100%;border-radius:7px;transform-origin:left;animation:pvgrow .7s var(--cds-ease-out) both}
+.pv-tot{background:var(--hp-a)}.pv-up{background:var(--color-bad)}.pv-dn{background:var(--color-ok)}
+.pvm-v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.pvm-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:16px}
+.pvm-cols h3{font-size:var(--cds-font-size-caption);font-weight:700;margin-bottom:6px;color:var(--color-fg-muted)}
+.pvm-o{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.pvm-o li{display:grid;grid-template-columns:1fr auto;gap:0 10px;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:var(--cds-font-size-caption)}
+.pvm-o li:hover{background:color-mix(in srgb,var(--hp-a) 9%,transparent)}
+.pvm-o li .hp-mut{grid-column:1/-1;font-size:12px}
+.pvm-o li b{font-variant-numeric:tabular-nums}
+.hp-tw tbody tr.sel{background:color-mix(in srgb,var(--hp-a) 12%,transparent)}
+@keyframes pvgrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.pvm-t i{animation:none}}
+@media (max-width:560px){.pvm-r{grid-template-columns:1fr auto}.pvm-t{grid-column:1/-1;order:3}}
 </style>
 <div id="hp" class="hp">
   <header class="hp-hero">
@@ -443,6 +461,8 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
       <div class="hp-card"><h2 id="ov-cat-h">สัดส่วนตามกลุ่มยา</h2><p class="hp-note" id="ov-cat-n"></p><div id="ov-cat"></div></div>
     </div>
     <div class="hp-card"><h2 id="ov-long-h">ภาพต่อเนื่องทุกเดือน</h2><p class="hp-note" id="ov-long-n"></p><div class="hp-svg" id="ov-long" style="min-height:250px"></div></div>
+    <div class="hp-card"><h2 id="ov-pvm-h">มูลค่าเปลี่ยนเพราะปริมาณหรือราคา</h2><p class="hp-note" id="ov-pvm-n"></p><div id="ov-pvm"></div></div>
+    <div class="hp-card"><h2>สรุปรายปีงบประมาณ</h2><p class="hp-note">รวมทุกปีงบที่มีข้อมูล ตามกลุ่มยาที่เลือกอยู่ · คอลัมน์ “เทียบปีก่อน” เทียบเฉพาะเดือนที่มีข้อมูลตรงกัน (ปีที่ยังไม่ครบจะไม่ถูกเทียบกับปีเต็ม) · กดแถวเพื่อดูปีงบนั้น</p><div id="ov-fy"></div></div>
     <div class="hp-morebar"><button class="hp-btn" id="ov-more-btn" data-act="more2">ดูรายละเอียดเพิ่มเติม ▾</button></div>
     <div class="hp-more" id="ov-more" hidden>
     <div class="hp-kpis" id="ov-kpis2"></div>
@@ -507,7 +527,7 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
     <p><b>นิยาม</b> มูลค่า = คอลัมน์ “มูลค่า(บาท)” ต้นทุน = “ต้นทุน(บาท)” ปริมาณ = “จำนวน” ตามหน่วยนับของยาแต่ละรายการ (รวมข้ามยาต่างชนิดไม่ได้ จึงแสดงปริมาณเป็นรายตัว) จำนวนครั้งที่จ่าย = คอลัมน์ “รายการ” ในรายงาน</p>
     <p><b>การจัดกลุ่ม</b> จัดกลุ่มโรคจากชื่อและข้อบ่งใช้หลักของยาแต่ละรายการ ยาใช้ร่วมหลายโรค (เช่น Seretide, Symbicort, Berodual, Salbutamol NB) แยกเป็น “COPD/หอบหืด (ใช้ร่วม)” และนับรวมในทั้งสองคลินิกเมื่อเลือกดู จึงผลรวมของ COPD กับหอบหืดจะซ้ำกัน ยาบางรายการอาจใช้ต่างจากข้อบ่งใช้หลัก (เช่น propranolol, calcium carbonate, sodium bicarbonate) ควรให้เภสัชกรทบทวน</p>
     <p><b>การตรวจความผิดปกติ</b> เป็นสัญญาณให้ตรวจสอบ ไม่ใช่ข้อสรุปทางคลินิก ใช้มูลค่ารายเดือนของยาแต่ละรายการ รายละเอียดเกณฑ์อยู่ในแท็บ “ความผิดปกติและข้อสังเกต”</p>
-      <p><b>ที่มาและวิธีคำนวณ</b> ข้อมูลจากรายงานสรุปการใช้เวชภัณฑ์ยารายเดือน ตั้งแต่ ต.ค. 2567 (ปีงบประมาณ 2568) <span id="ft-last"></span> · “เทียบปีงบก่อน” = ช่วงเดือนเดียวกันของปีงบประมาณก่อนหน้า · “แนวโน้ม” = ผลรวม 3 เดือนท้าย เทียบ 3 เดือนแรกของช่วงที่เลือก (ถ้าเลือกน้อยกว่า 6 เดือนจะใช้ครึ่งหนึ่งของช่วง) · “เทียบช่วงก่อนหน้า” = ช่วงที่เลือกเทียบกับช่วงเวลาความยาวเท่ากันก่อนหน้า · เส้นแนวโน้มบนกราฟแท่ง = ค่าเฉลี่ยเคลื่อนที่ 3 เดือน · เครื่องหมาย ▲▼ บนแท่ง = เดือนที่ห่างจากค่าเฉลี่ยของปี ≥ 1.5 เท่าของส่วนเบี่ยงเบนมาตรฐาน · ตัวเลขมูลค่าเกิน 1 ล้านบาทแสดงเป็น “ล้าน” ที่เหลือแสดงเป็นบาทเต็ม</p>
+      <p><b>ที่มาและวิธีคำนวณ</b> ข้อมูลจากรายงานสรุปการใช้เวชภัณฑ์ยารายเดือน ตั้งแต่ ต.ค. 2567 (ปีงบประมาณ 2568) <span id="ft-last"></span> · “เทียบปีงบก่อน” = ช่วงเดือนเดียวกันของปีงบประมาณก่อนหน้า · “ปริมาณ/ราคา” = แยกส่วนต่างมูลค่าเป็นผลจากปริมาณที่จ่าย (ที่ราคาเดิม) และราคาต่อหน่วย (ที่ปริมาณใหม่) ส่วนยาที่มีเฉพาะช่วงใดช่วงหนึ่งนับเป็นยาใหม่/ยาที่หยุดใช้ · การรวมรายการ: simvastatin 20 mg รวมกับ 40 mg โดยนับ 1 เม็ด 20 mg = ½ เม็ด 40 mg เพราะ รพ.เปลี่ยนมาใช้ 40 mg ครึ่งเม็ดแทน · “แนวโน้ม” = ผลรวม 3 เดือนท้าย เทียบ 3 เดือนแรกของช่วงที่เลือก (ถ้าเลือกน้อยกว่า 6 เดือนจะใช้ครึ่งหนึ่งของช่วง) · “เทียบช่วงก่อนหน้า” = ช่วงที่เลือกเทียบกับช่วงเวลาความยาวเท่ากันก่อนหน้า · เส้นแนวโน้มบนกราฟแท่ง = ค่าเฉลี่ยเคลื่อนที่ 3 เดือน · เครื่องหมาย ▲▼ บนแท่ง = เดือนที่ห่างจากค่าเฉลี่ยของปี ≥ 1.5 เท่าของส่วนเบี่ยงเบนมาตรฐาน · ตัวเลขมูลค่าเกิน 1 ล้านบาทแสดงเป็น “ล้าน” ที่เหลือแสดงเป็นบาทเต็ม</p>
   </footer>
   <div class="hp-tip" id="hp-tip" hidden></div>
 </div>
