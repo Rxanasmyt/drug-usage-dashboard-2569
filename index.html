@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="th"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Dashboard การใช้ยา รพ.กรงปินัง ปีงบประมาณ 2569</title>
+<title>Dashboard การใช้ยา รพ.กรงปินัง ปีงบประมาณ 2568–2569</title>
 <meta name="theme-color" content="#00908f">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="ใช้ยา 69">
+<meta name="apple-mobile-web-app-title" content="Dashboard ยา">
 <style>
 :root{color-scheme:light dark;--c0:#00908f;--c1:#00a9ab;--c2:#e9806a;--c3:#2a6f72;--c4:#5bb5a0;--c5:#c96b55;
 --color-bg:#f1f8f8;--color-fg:#14292b;--color-fg-muted:#557072;--color-panel:#ffffff;--color-border-line:#d3e4e4;
@@ -368,12 +368,15 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
 .hp-prog i{transition:width .8s cubic-bezier(.2,.8,.2,1)}
 .hp-more:not([hidden]){animation:hpUp .5s cubic-bezier(.2,.8,.2,1) both}
 }
+
+.hp-lg .ln.dash::before{background:none;border-top:2px dashed var(--c);height:0}
+.hp-prevl{pointer-events:none}
 </style>
 <div id="hp" class="hp">
   <header class="hp-hero">
     <div>
-      <span class="hp-eyebrow">เภสัชกรรม โรงพยาบาลกรงปินัง จ.ยะลา · ปีงบประมาณ 2569</span>
-      <h1>Dashboard แสดงปริมาณการใช้ยาและมูลค่าการใช้ยา ปีงบประมาณ 2569</h1>
+      <span class="hp-eyebrow">เภสัชกรรม โรงพยาบาลกรงปินัง จ.ยะลา · ปีงบประมาณ <span id="hp-fy-e">2569</span></span>
+      <h1>Dashboard แสดงปริมาณการใช้ยาและมูลค่าการใช้ยา ปีงบประมาณ <span id="hp-fy-t">2569</span></h1>
       <p class="hp-sub" id="hp-sub">ปีงบประมาณ 2569 · ต.ค. 2568 – ก.ย. 2569 · แหล่งข้อมูล: รายงานสรุปการใช้เวชภัณฑ์ยา (ที่บันทึกจ่ายยา) 12 เดือน</p>
     </div>
     <div class="hp-hn" id="hp-hero-n"></div>
@@ -390,6 +393,8 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
   <div class="hp-fbar" id="hp-fbar" hidden></div>
   <div class="hp-filters" id="hp-filters">
     <div class="hp-frow">
+      <div class="hp-fg"><label>ปีงบประมาณ</label><div class="hp-seg" id="hp-fy"></div></div>
+      <div class="hp-fg" id="hp-cmpg"><label>เปรียบเทียบแบบ</label><div class="hp-seg" id="hp-cmpm"><button data-act="cmpm" data-m="yoy">กับปีงบก่อน</button><button data-act="cmpm" data-m="trend">ต้นช่วง → ท้ายช่วง</button></div></div>
       <div class="hp-fg"><label for="hp-from">ช่วงเวลา</label>
         <div class="hp-inl"><select id="hp-from" aria-label="เดือนเริ่มต้น"></select><span class="hp-mut">ถึง</span><select id="hp-to" aria-label="เดือนสิ้นสุด"></select></div></div>
       <div class="hp-fg"><label>เลือกเร็ว</label>
@@ -437,6 +442,7 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
       <div class="hp-card"><h2 id="ov-top-h">ยา 10 อันดับแรก</h2><p class="hp-note">กดที่แถวเพื่อดูแนวโน้มรายเดือนของยาตัวนั้น</p><div id="ov-top"></div></div>
       <div class="hp-card"><h2 id="ov-cat-h">สัดส่วนตามกลุ่มยา</h2><p class="hp-note" id="ov-cat-n"></p><div id="ov-cat"></div></div>
     </div>
+    <div class="hp-card"><h2 id="ov-long-h">ภาพต่อเนื่องทุกเดือน</h2><p class="hp-note" id="ov-long-n"></p><div class="hp-svg" id="ov-long" style="min-height:250px"></div></div>
     <div class="hp-morebar"><button class="hp-btn" id="ov-more-btn" data-act="more2">ดูรายละเอียดเพิ่มเติม ▾</button></div>
     <div class="hp-more" id="ov-more" hidden>
     <div class="hp-kpis" id="ov-kpis2"></div>
@@ -501,7 +507,7 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
     <p><b>นิยาม</b> มูลค่า = คอลัมน์ “มูลค่า(บาท)” ต้นทุน = “ต้นทุน(บาท)” ปริมาณ = “จำนวน” ตามหน่วยนับของยาแต่ละรายการ (รวมข้ามยาต่างชนิดไม่ได้ จึงแสดงปริมาณเป็นรายตัว) จำนวนครั้งที่จ่าย = คอลัมน์ “รายการ” ในรายงาน</p>
     <p><b>การจัดกลุ่ม</b> จัดกลุ่มโรคจากชื่อและข้อบ่งใช้หลักของยาแต่ละรายการ ยาใช้ร่วมหลายโรค (เช่น Seretide, Symbicort, Berodual, Salbutamol NB) แยกเป็น “COPD/หอบหืด (ใช้ร่วม)” และนับรวมในทั้งสองคลินิกเมื่อเลือกดู จึงผลรวมของ COPD กับหอบหืดจะซ้ำกัน ยาบางรายการอาจใช้ต่างจากข้อบ่งใช้หลัก (เช่น propranolol, calcium carbonate, sodium bicarbonate) ควรให้เภสัชกรทบทวน</p>
     <p><b>การตรวจความผิดปกติ</b> เป็นสัญญาณให้ตรวจสอบ ไม่ใช่ข้อสรุปทางคลินิก ใช้มูลค่ารายเดือนของยาแต่ละรายการ รายละเอียดเกณฑ์อยู่ในแท็บ “ความผิดปกติและข้อสังเกต”</p>
-      <p><b>ที่มาและวิธีคำนวณ</b> ข้อมูลจากรายงานสรุปการใช้เวชภัณฑ์ยา 12 เดือน (ต.ค. 2568 – ก.ย. 2569) นำเข้า 21 ต.ค. 2569 · “แนวโน้ม” = ผลรวม 3 เดือนท้าย เทียบ 3 เดือนแรกของช่วงที่เลือก (ถ้าเลือกน้อยกว่า 6 เดือนจะใช้ครึ่งหนึ่งของช่วง) · “เทียบช่วงก่อนหน้า” = ช่วงที่เลือกเทียบกับช่วงเวลาความยาวเท่ากันก่อนหน้า · เส้นแนวโน้มบนกราฟแท่ง = ค่าเฉลี่ยเคลื่อนที่ 3 เดือน · เครื่องหมาย ▲▼ บนแท่ง = เดือนที่ห่างจากค่าเฉลี่ยของปี ≥ 1.5 เท่าของส่วนเบี่ยงเบนมาตรฐาน · ตัวเลขมูลค่าเกิน 1 ล้านบาทแสดงเป็น “ล้าน” ที่เหลือแสดงเป็นบาทเต็ม</p>
+      <p><b>ที่มาและวิธีคำนวณ</b> ข้อมูลจากรายงานสรุปการใช้เวชภัณฑ์ยารายเดือน ตั้งแต่ ต.ค. 2567 (ปีงบประมาณ 2568) <span id="ft-last"></span> · “เทียบปีงบก่อน” = ช่วงเดือนเดียวกันของปีงบประมาณก่อนหน้า · “แนวโน้ม” = ผลรวม 3 เดือนท้าย เทียบ 3 เดือนแรกของช่วงที่เลือก (ถ้าเลือกน้อยกว่า 6 เดือนจะใช้ครึ่งหนึ่งของช่วง) · “เทียบช่วงก่อนหน้า” = ช่วงที่เลือกเทียบกับช่วงเวลาความยาวเท่ากันก่อนหน้า · เส้นแนวโน้มบนกราฟแท่ง = ค่าเฉลี่ยเคลื่อนที่ 3 เดือน · เครื่องหมาย ▲▼ บนแท่ง = เดือนที่ห่างจากค่าเฉลี่ยของปี ≥ 1.5 เท่าของส่วนเบี่ยงเบนมาตรฐาน · ตัวเลขมูลค่าเกิน 1 ล้านบาทแสดงเป็น “ล้าน” ที่เหลือแสดงเป็นบาทเต็ม</p>
   </footer>
   <div class="hp-tip" id="hp-tip" hidden></div>
 </div>
