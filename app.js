@@ -6,7 +6,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 const nf=d3.format(',.0f'), nf1=d3.format(',.1f');
 const sum=a=>{let t=0;for(let i=0;i<a.length;i++)t+=a[i];return t;};
 const MN={v:'มูลค่า',c:'ต้นทุน',q:'ปริมาณ',n:'จำนวนครั้งที่จ่าย'};
-const S={mode:'dis',from:1,to:12,view:'ALL',metric:'v',tab:'overview',q:'',active:true,sort:{k:'tot',d:-1},limit:80,cmp:[],cm:'v',detail:null,dm:'v',fy:null,cmpm:null,fopen:false};
+const S={mode:'dis',from:1,to:12,view:'ALL',metric:'v',tab:'overview',q:'',active:true,sort:{k:'tot',d:-1},limit:80,cmp:[],cm:'v',detail:null,dm:'v',fy:null,cmpm:null,fopen:false,ct:'bar',tmz:null};
 let anim='tab',animNow=null,animT=null;
 let HC=null,ALLM=[],FYS=[],AV=12,HASP=false,SIG='',D=[],CATS=[],SYMS=[],MON=[],catBy={},symBy={},VIEWS=[],viewBy={},VL={dis:[],sym:[]},VB={dis:{},sym:{}},byId={},ready=false;
 const GR=()=>S.mode==='sym'?SYMS:CATS;
@@ -131,6 +131,9 @@ function buildChips(){
 }
 function setMode(m){S.mode=m;VIEWS=VL[m];viewBy=VB[m];S.view='ALL';S.limit=80;buildChips();}
 function syncControls(){
+  $$('#ov-ct button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.ct)));
+  {const r=$('#sc-r');if(r){r.max=String(AV);r.min='1';r.value=String(Math.min(S.to,AV));const l=$('#sc-l');if(l)l.textContent=(S.from>1?mlab(S.from-1)+' – ':'ต.ค. – ')+mlab(S.to-1);
+    const p=$('#sc-play');if(p)p.textContent=SC.t?'⏸ หยุด':'▶ เล่น';}}
   {const fb=$('#hp-fxb');if(fb){fb.setAttribute('aria-pressed',String(FXON));fb.textContent='✨ เอฟเฟกต์ภาพ: '+(FXON?'เปิด':'ปิด');}}
   {const f=$('#hp-filters');if(f)f.classList.toggle('open',!!S.fopen);const tg=$('#hp-ftog');
    if(tg){tg.setAttribute('aria-expanded',String(!!S.fopen));const t=$('#hp-ftxt');if(t)t.textContent='ปีงบ '+S.fy+' · '+rangeLabel()+' · '+view().n;}}
@@ -288,7 +291,7 @@ function barChart(host,vals,o){
     const bh=Math.max(0,y(0)-y(v));bhs.push(bh);
     const over=o.target>0&&v>o.target;
     const tf=morph&&prev[i]>0&&bh>0?';transform-box:fill-box;transform-origin:50% 100%;transform:scaleY('+Math.min(4,prev[i]/bh).toFixed(3)+')':'';
-    s+='<rect class="hp-bar'+(morph?' mo':'')+'" data-i="'+i+'" style="--i:'+i+';fill:url(#'+gid+(over?'b':'')+');opacity:'+(inr(i)?1:.25)+tf+'" x="'+x(i).toFixed(1)+'" y="'+(y(v)).toFixed(1)+'" width="'+x.bandwidth().toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="4"/>';
+    s+='<rect class="hp-bar'+(morph?' mo':'')+'" data-i="'+i+'" style="--i:'+i+';fill:url(#'+gid+(over?'b':'')+');opacity:'+(o.ct&&o.ct!=='bar'?0:(inr(i)?1:.25))+tf+'" x="'+x(i).toFixed(1)+'" y="'+(y(v)).toFixed(1)+'" width="'+x.bandwidth().toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="4"/>';
     if(inr(i)&&v>0&&tg[i])s+='<text class="hp-ax hp-tag" x="'+(x(i)+x.bandwidth()/2).toFixed(1)+'" y="'+(y(v)-18).toFixed(1)+'" text-anchor="middle" style="fill:'+(tg[i].indexOf('ต่ำ')===0?'var(--color-ok)':tg[i].indexOf('สูง')===0?'var(--color-bad)':'var(--color-fg-muted)')+'">'+tg[i]+'</text>';
     if(W>760||tg[i]){if(inr(i)&&v>0)s+='<text class="hp-ax" x="'+(x(i)+x.bandwidth()/2).toFixed(1)+'" y="'+(y(v)-5).toFixed(1)+'" text-anchor="middle" style="'+(i===pk?'fill:var(--color-fg);font-weight:600':'')+'">'+bahtS(v)+'</text>';}
     if(fl[i]&&inr(i)){const cx=x(i)+x.bandwidth()/2,cy=y(v)-(tg[i]?34:20),hi=fl[i].t==='hi';
@@ -297,6 +300,12 @@ function barChart(host,vals,o){
   });
   (o.notes||[]).forEach(nt=>{const cx=x(nt.i)+x.bandwidth()/2,yt=y(vals[nt.i]);
     s+='<line x1="'+cx.toFixed(1)+'" x2="'+cx.toFixed(1)+'" y1="20" y2="'+Math.max(22,yt-22).toFixed(1)+'" style="stroke:'+(nt.up?'var(--color-bad)':'var(--color-ok)')+'" stroke-width="1.2" stroke-dasharray="2 3"/><text class="hp-ax hp-note-t" x="'+cx.toFixed(1)+'" y="14" text-anchor="middle" style="font-weight:700;fill:'+(nt.up?'var(--color-bad)':'var(--color-ok)')+'">'+esc(nt.t)+'</text>';});
+  if(o.ct&&o.ct!=='bar'){
+    const cp=vals.map((v,i)=>[x(i)+x.bandwidth()/2,y(v)]),ln=d3.line().curve(d3.curveMonotoneX)(cp);
+    if(o.ct==='area')s+='<path class="hp-areaf" d="'+ln+'L'+cp[cp.length-1][0].toFixed(1)+' '+y(0)+'L'+cp[0][0].toFixed(1)+' '+y(0)+'Z" style="fill:'+c0+';opacity:.2"/>';
+    s+='<path class="hp-line" pathLength="1" d="'+ln+'" fill="none" style="stroke:'+c0+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+    cp.forEach((p,i)=>{s+='<circle class="hp-dot" style="--i:'+i+';fill:'+c0+';opacity:'+(inr(i)?1:.3)+'" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(i===pk?5:3.4)+'"/>';});
+  }
   PB[host.id]=bhs;
   if(avg>0)s+='<line x1="'+lm+'" x2="'+(W-8)+'" y1="'+y(avg)+'" y2="'+y(avg)+'" style="stroke:var(--cds-chart-reference)" stroke-width="1.5" stroke-dasharray="5 4"/>';
   if(o.prev){
@@ -406,6 +415,8 @@ function makeCI(rows,m,di){
   if(!di)return null;
   return {mode:'trend',k:di.k,a:di.a,b:di.b,d:di.d,labA:di.k+' เดือนแรก',labB:di.k+' เดือนท้าย',pair:x=>{const rr=rg(x[m]);return {a:sum(rr.slice(0,di.k)),b:sum(rr.slice(-di.k))};}};
 }
+function ring(p){const c=2*Math.PI*24;return '<svg class="hp-ring" width="58" height="58" viewBox="0 0 58 58" aria-hidden="true"><circle cx="29" cy="29" r="24" fill="none" stroke-width="7" style="stroke:color-mix(in srgb,var(--color-fg) 10%,transparent)"/><circle class="fg" cx="29" cy="29" r="24" fill="none" stroke-width="7" stroke-linecap="round" transform="rotate(-90 29 29)" style="stroke:var(--hp-a);stroke-dasharray:'+c.toFixed(1)+'" data-o="'+(c*(1-p)).toFixed(1)+'" data-c="'+c.toFixed(1)+'"/></svg>';}
+function rev_ring(){$$('.hp-ring .fg').forEach(e=>{if(!fx()){e.style.strokeDashoffset=e.dataset.o;return;}e.style.transition='none';e.style.strokeDashoffset=e.dataset.c;requestAnimationFrame(()=>requestAnimationFrame(()=>{e.style.transition='stroke-dashoffset 1.5s cubic-bezier(.2,.8,.2,1)';e.style.strokeDashoffset=e.dataset.o;}));});}
 function kpi(l,n,s,sp){return '<div class="hp-kpi">'+(sp?'<span class="sp">'+sp+'</span>':'')+'<span class="l">'+l+'</span><span class="n">'+n+'</span><span class="s">'+s+'</span></div>';}
 function deltaTag(d,upBad){
   if(!isFinite(d))return '<span class="up-bad">เริ่มมีการใช้</span>';
@@ -435,7 +446,9 @@ function renderOverview(){
   $('#ov-kpis').innerHTML=
     kpi('รวม'+MN[m]+' ('+esc(rangeLabel())+')',cnt('tot',tot,'b')+' <small>บาท</small>',(ci&&ci.mode==='yoy'?'เทียบปีงบ '+(S.fy-1)+' '+deltaTag(ci.d,true)+' · ':(pd!=null?'เทียบช่วงก่อนหน้า '+deltaTag(pd,true)+' · ':''))+(m==='v'?'ต้นทุน '+baht(ctot)+' บาท ('+(vtot?pct(ctot/vtot,0):'—')+')':'มูลค่า '+baht(vtot)+' บาท'),len>=2?spark(r,92,34):'')+
     k2+
-    kpi('แนวโน้มในช่วงที่เลือก','<span class="big">'+(di?deltaTag(di.d,true):'—')+'</span>',di?di.k+' เดือนท้าย เทียบ '+di.k+' เดือนแรก':'ต้องเลือกอย่างน้อย 2 เดือน');
+    kpi('แนวโน้มในช่วงที่เลือก','<span class="big">'+(di?deltaTag(di.d,true):'—')+'</span>',di?di.k+' เดือนท้าย เทียบ '+di.k+' เดือนแรก':'ต้องเลือกอย่างน้อย 2 เดือน')+
+    (vtot>0?kpi('ต้นทุนเทียบมูลค่า','<span class="big">'+pct(ctot/vtot,0)+'</span>','ส่วนต่าง (มูลค่า − ต้นทุน) '+baht(vtot-ctot)+' บาท',ring(Math.min(1,ctot/vtot))):'');
+  rev_ring();
   $('#ov-kpis2').innerHTML=
     kpi('เดือนสูงสุด',esc(mlab(S.from-1+pk)),baht(r[pk])+' บาท · ต่ำสุด '+esc(mlab(S.from-1+lo))+' '+baht(r[lo]))+
     kpi('เดือนล่าสุดเทียบเดือนก่อน',mom==null?'—':deltaTag(mom,true),mom==null?'ต้องเลือกอย่างน้อย 2 เดือน':esc(mlab(S.to-1))+' เทียบ '+esc(mlab(S.to-2)))+
@@ -444,7 +457,7 @@ function renderOverview(){
   $('#ov-trend-n').textContent='แท่ง = '+MN[m]+' (บาท) · เส้นหนา = แนวโน้มเฉลี่ย 3 เดือน (ไม่สะดุดกับความผันผวนรายเดือน) · เส้นประ = ค่าเฉลี่ยในช่วงที่เลือก · แถบแดงจาง = เดือนสูงผิดปกติ · ลากเมาส์/นิ้วบนกราฟเพื่อเลือกช่วงเดือน · แท่งจางคือเดือนนอกช่วงที่เลือก';
   S.target=loadT();const tgi=$('#hp-tg');if(tgi&&document.activeElement!==tgi)tgi.value=S.target?String(S.target):'';
   const pvS=HASP&&S.cmpm==='yoy'?pser(rows,m):null;
-  barChart($('#ov-trend'),sv,{ma:true,prev:pvS,flags:flagsOf(sv),target:S.target,aria:'แนวโน้มรายเดือน',tip:i=>{
+  barChart($('#ov-trend'),sv,{ct:S.ct,notes:eventNotes(rows,m),ma:true,prev:pvS,flags:flagsOf(sv),target:S.target,aria:'แนวโน้มรายเดือน',tip:i=>{
     const prev=i>0&&sv[i-1]>0?sv[i]/sv[i-1]-1:null;
     return MON[i].full+' '+MON[i].year+'\n'+MN[m]+': '+nf(sv[i])+' บาท\n'+MN[m==='v'?'c':'v']+': '+nf(so[i])+' บาท'+(prev==null?'':'\nเทียบเดือนก่อน: '+sgn(prev,1))+(pvS?'\nปีงบ '+(S.fy-1)+': '+nf(pvS[i])+' บาท'+(pvS[i]>0?' ('+sgn(sv[i]/pvS[i]-1,0)+')':''):'');}});
   $('#ov-trend-lg').innerHTML='<span style="--c:'+C0()+'">'+MN[m]+'</span><span class="ln" style="--c:'+(colors()[2]||'var(--color-fg)')+'">แนวโน้ม (เฉลี่ย 3 เดือน)</span><span class="ln" style="--c:var(--cds-chart-reference)">ค่าเฉลี่ย</span>'+(pvS?'<span class="ln dash" style="--c:var(--cds-chart-reference)">ปีงบ '+(S.fy-1)+' (เส้นประ)</span><span style="--c:var(--color-bad)">พื้นที่แดง = ใช้มากกว่าปีก่อน</span><span style="--c:var(--color-ok)">เขียว = น้อยกว่า</span>':'')+(S.target?'<span class="ln" style="--c:var(--color-bad)">เป้า (แท่งแดง = เกินเป้า)</span>':'')+'<span class="nb"><b class="b-bad">▲</b> เดือนสูงผิดปกติ</span><span class="nb"><b class="b-ok">▼</b> เดือนต่ำผิดปกติ</span>';
@@ -547,6 +560,15 @@ function renderWaterfall(rows,m,di){
 
 /* ---------- race ---------- */
 const R={key:'',i:0,t:null,items:[]};
+const SC={t:null,orig:null};
+function scStop(){if(SC.t){clearInterval(SC.t);SC.t=null;}const p=$('#sc-play');if(p)p.textContent='▶ เล่น';}
+function scSet(k){if(!SC.orig)SC.orig=[S.from,S.to];S.to=Math.max(S.from,Math.min(AV,k));anim='data';go();}
+function scToggle(){
+  if(SC.t){scStop();return;}
+  if(S.to>=AV||!SC.orig)scSet(S.from);
+  const p=$('#sc-play');if(p)p.textContent='⏸ หยุด';
+  SC.t=setInterval(()=>{if(S.to>=AV){scStop();return;}scSet(S.to+1);},reduced()?1200:850);
+}
 function raceStop(){if(R.t){clearInterval(R.t);R.t=null;}const b=$('#race-play');if(b)b.textContent='▶ เล่นย้อนหลัง';}
 function raceFrame(i){
   const host=$('#race');if(!host||!R.items.length)return;
@@ -734,8 +756,11 @@ const dcol=d=>{
 };
 function renderTreemap(rows,m,di,tot){
   const host=$('#ov-tm');
-  const leaves=rows.map(x=>{const pr=di?di.pair(x):{a:0,b:0};return {x:x,t:sum(rg(x[m])),d:pr.a>0?pr.b/pr.a-1:(pr.b>0?Infinity:0)};}).filter(o=>o.t>0).sort((p,q)=>q.t-p.t).slice(0,90);
-  if(leaves.length<3){host.innerHTML='<div class="hp-empty">ข้อมูลไม่พอสำหรับแผนที่มูลค่า</div>';$('#ov-tm-n').textContent='';return;}
+  let leaves=rows.map(x=>{const pr=di?di.pair(x):{a:0,b:0};return {x:x,t:sum(rg(x[m])),d:pr.a>0?pr.b/pr.a-1:(pr.b>0?Infinity:0)};}).filter(o=>o.t>0).sort((p,q)=>q.t-p.t);
+  if(S.tmz&&!leaves.some(o=>gk(o.x)===S.tmz))S.tmz=null;
+  if(S.tmz)leaves=leaves.filter(o=>gk(o.x)===S.tmz);
+  leaves=leaves.slice(0,90);
+  if(leaves.length<3&&!S.tmz){host.innerHTML='<div class="hp-empty">ข้อมูลไม่พอสำหรับแผนที่มูลค่า</div>';$('#ov-tm-n').textContent='';return;}
   const grp={};leaves.forEach(o=>{const c=gk(o.x);(grp[c]=grp[c]||[]).push(o);});
   const root=d3.hierarchy({children:Object.keys(grp).map(c=>({code:c,children:grp[c].map(o=>({o:o}))}))}).sum(d=>d.o?d.o.t:0).sort((a,b)=>b.value-a.value);
   const W=Math.max(300,host.clientWidth||600),H=Math.round(Math.max(300,Math.min(480,W*.56)));
@@ -745,7 +770,7 @@ function renderTreemap(rows,m,di,tot){
     const w=g.x1-g.x0,gd=(S.mode==='sym'?symBy:catBy)[g.data.code];
     sv+='<g style="--i:'+gi+'" class="hp-tmg"><rect x="'+g.x0+'" y="'+g.y0+'" width="'+w+'" height="'+(g.y1-g.y0)+'" rx="6" style="fill:color-mix(in srgb,var(--color-fg) 5%,transparent);stroke:var(--color-border-line)"/>';
     if(w>46)sv+='<text class="hp-ax" x="'+(g.x0+6)+'" y="'+(g.y0+12)+'" style="font-weight:700;fill:var(--color-fg)">'+esc(trunc(gd?gd.short:g.data.code,Math.floor((w-10)/6.4)))+'</text>';
-    sv+='<rect x="'+g.x0+'" y="'+g.y0+'" width="'+w+'" height="17" fill="transparent" style="cursor:pointer" data-act="pickcat" data-k="'+esc(g.data.code)+'" data-tip="'+esc((gd?gd.name:g.data.code)+'\nกดเพื่อกรองเฉพาะกลุ่มนี้')+'"/></g>';
+    sv+='<rect x="'+g.x0+'" y="'+g.y0+'" width="'+w+'" height="17" fill="transparent" style="cursor:pointer" data-act="tmz" data-k="'+esc(g.data.code)+'" data-tip="'+esc((gd?gd.name:g.data.code)+(S.tmz?'':'\nกดเพื่อซูมดูยาในกลุ่มนี้'))+'"/></g>';
     g.children.forEach((lf,li)=>{
       const o=lf.data.o,w2=lf.x1-lf.x0,h2=lf.y1-lf.y0;
       sv+='<g class="hp-tml" style="--i:'+(gi*3+li)+'" data-act="detail" data-id="'+o.x.id+'" data-tip="'+esc(o.x.label+'\n'+MN[m]+': '+nf(o.t)+' บาท ('+pct(o.t/tot,1)+')\nแนวโน้ม: '+(isFinite(o.d)?sgn(o.d,0):'เริ่มมีการใช้'))+'"><rect x="'+lf.x0+'" y="'+lf.y0+'" width="'+w2+'" height="'+h2+'" rx="4" style="fill:'+dcol(o.d)+'"/>';
@@ -753,7 +778,8 @@ function renderTreemap(rows,m,di,tot){
       sv+='</g>';
     });
   });
-  host.innerHTML=sv+'</svg>';
+  const gdz=S.tmz?(S.mode==='sym'?symBy:catBy)[S.tmz]:null;
+  host.innerHTML=(S.tmz?'<div class="hp-tmbar"><button class="hp-btn" data-act="tmz" data-k="">← ทุกกลุ่ม</button><button class="hp-btn" data-act="pickcat" data-k="'+esc(S.tmz)+'">กรองทั้งหน้าเฉพาะ '+esc(gdz?gdz.short:S.tmz)+'</button></div>':'')+sv+'</svg>';
   const shown=sum(leaves.map(o=>o.t));
   $('#ov-tm-n').textContent='ขนาดพื้นที่ = '+MN[m]+' · สีแดง = เพิ่มขึ้น สีเขียว = ลดลง เทา = ใกล้เคียงเดิม (เทียบ '+(di?di.labB+' กับ '+di.labA:'—')+' ยิ่งเข้มยิ่งเปลี่ยนมาก) · แสดงยา '+leaves.length+' รายการแรก คิดเป็น '+pct(shown/(tot||1),0)+' ของยอดรวม · กดหัวกลุ่มเพื่อกรอง กดช่องยาเพื่อดูรายละเอียด';
   $('#ov-tm-h').textContent='เงินกระจุกอยู่ตรงไหน และตรงไหนกำลังโต';
@@ -791,8 +817,8 @@ function renderCal(){
   const rows=scope().map(x=>{const a=x[m],a0=a.slice(0,AV),t=sum(a0),mean=t/AV,mx=d3.max(a0);return {x:x,t:t,mx:mx,ratio:mean>0?mx/mean:0,pk:a.indexOf(mx)};}).filter(o=>o.t>=(m==='v'||m==='c'?30000:200)&&o.ratio>=2.2).sort((p,q)=>q.ratio-p.ratio).slice(0,12);
   if(!rows.length){host.innerHTML='<div class="hp-empty">ไม่พบยาที่มีฤดูกาลชัดเจนในกลุ่มนี้</div>';return;}
   let hh='<div class="hp-cal"><div class="hp-cal-r hd"><span></span>'+MON.map(o=>'<span>'+esc(o.short)+'</span>').join('')+'<span>สูงสุด</span></div>';
-  rows.forEach(o=>{
-    hh+='<div class="hp-cal-r" data-act="detail" data-id="'+o.x.id+'"><span class="nm" title="'+esc(o.x.label)+'">'+esc(trunc(o.x.name,26))+'</span>'+o.x[m].map((v,i)=>'<span class="c'+(i===o.pk?' pk':'')+'" style="--i:'+i+';background:color-mix(in srgb,var(--hp-a) '+Math.round(v/o.mx*88)+'%,transparent)" data-tip="'+esc(o.x.name+' · '+MON[i].label+'\n'+nf(v)+(m==='q'?' '+o.x.unit:m==='n'?' ครั้ง':' บาท'))+'"></span>').join('')+'<span class="pkl">'+esc(MON[o.pk].short)+' · '+o.ratio.toFixed(1)+'×</span></div>';
+  rows.forEach((o,ri)=>{
+    hh+='<div class="hp-cal-r" data-act="detail" data-id="'+o.x.id+'"><span class="nm" title="'+esc(o.x.label)+'">'+esc(trunc(o.x.name,26))+'</span>'+o.x[m].map((v,i)=>'<span class="c'+(i===o.pk?' pk':'')+'" style="--i:'+i+';--r:'+ri+';background:color-mix(in srgb,var(--hp-a) '+Math.round(v/o.mx*88)+'%,transparent)" data-tip="'+esc(o.x.name+' · '+MON[i].label+'\n'+nf(v)+(m==='q'?' '+o.x.unit:m==='n'?' ครั้ง':' บาท'))+'"></span>').join('')+'<span class="pkl">'+esc(MON[o.pk].short)+' · '+o.ratio.toFixed(1)+'×</span></div>';
   });
   host.innerHTML=hh+'</div>';
 }
@@ -960,6 +986,20 @@ function renderScatter(){
 }
 
 /* ---------- detail ---------- */
+function eventNotes(rows,m){
+  if(m!=='v'&&m!=='c')return [];
+  const off=ALLM.indexOf(MON[0]),N=ALLM.length,ev=[];
+  rows.slice().sort((p,q)=>sum(q.A.v)-sum(p.A.v)).slice(0,60).forEach(x=>{
+    const nm=x.name.replace(/^[^A-Za-z0-9\u0E00-\u0E7F]+/,'').split(/[\s(]/)[0].slice(0,12),V=x.A.v;
+    priceNotes(x).forEach(n=>ev.push({i:n.i,t:nm+(n.up?' ราคา▲':' ราคา▼'),up:n.up,w:V[off+n.i]||0}));
+    let first=-1,last=-1;for(let j=0;j<N;j++)if(ALLM[j].has&&V[j]>0){if(first<0)first=j;last=j;}
+    if(first>0){const i=first-off;if(i>=0&&i<AV&&V[first]>=6000)ev.push({i:i,t:nm+' เริ่มใช้',up:true,w:V[first]});}
+    if(last>=0&&last<N-1&&ALLM[last+1].has){const i=last+1-off,pa=(V[last]+(V[last-1]||0)+(V[last-2]||0))/3;if(i>=0&&i<AV&&pa>=5000)ev.push({i:i,t:nm+' หยุดใช้',up:false,w:pa});}
+  });
+  ev.sort((p,q)=>q.w-p.w);const out=[];
+  ev.forEach(e=>{if(out.length<3&&e.i+1>=S.from&&e.i+1<=S.to&&out.every(o=>Math.abs(o.i-e.i)>=3))out.push(e);});
+  return out;
+}
 function priceNotes(x){
   const off=ALLM.indexOf(MON[0]),N=ALLM.length,p=[];
   for(let j=0;j<N;j++)p.push(ALLM[j].has&&x.A.q[j]>0&&x.A.v[j]>0?x.A.v[j]/x.A.q[j]:null);
@@ -1109,6 +1149,10 @@ document.addEventListener('click',e=>{
   const a=el.dataset.act;
   if(a==='tab'){S.tab=el.dataset.t;}
   else if(a==='view'){setView(el.dataset.k);}
+  else if(a==='ct'){S.ct=el.dataset.v;}
+  else if(a==='tmz'){S.tmz=el.dataset.k||null;}
+  else if(a==='scplay'){scToggle();return;}
+  else if(a==='screset'){scStop();if(SC.orig){S.from=SC.orig[0];S.to=SC.orig[1];SC.orig=null;}}
   else if(a==='mode'){setMode(el.dataset.m);}
   else if(a==='pickcat'){const k=el.dataset.k;setView(S.mode==='dis'&&k==='resp_shared'?'COPD':k);S.tab='overview';scrollTop();}
   else if(a==='racep'){raceToggle();return;}
@@ -1138,7 +1182,7 @@ document.addEventListener('click',e=>{
   else if(a==='cmpclear'){S.cmp=[];}
   else if(a==='cmptop'){const top=scope().slice().sort((p,q)=>sum(rg(q.v))-sum(rg(p.v))).slice(0,5).map(x=>x.id);S.cmp=top;}
   else if(a==='cmetric'){S.cm=el.dataset.m;}
-  anim=(a==='tab'||a==='pickcat')?'tab':'data';go();
+  anim=(a==='tab'||a==='pickcat'||a==='ct')?'tab':'data';go();
 });
 function scrollTop(){const r=$('#hp-filters');if(r&&r.scrollIntoView)r.scrollIntoView({block:'start'});}
 document.addEventListener('change',e=>{
@@ -1148,6 +1192,7 @@ document.addEventListener('change',e=>{
 document.addEventListener('input',e=>{
   if(e.target.id==='hp-gs')showRes($('#hp-gres'),e.target.value,'detail');
   else if(e.target.id==='hp-cq')showRes($('#hp-cres'),e.target.value,'cmpadd');
+  else if(e.target.id==='sc-r'){scStop();scSet(+e.target.value);}
   else if(e.target.id==='hp-race-sl'){raceStop();raceFrame(+e.target.value);}
   else if(e.target.id==='hp-tg'){const v=Math.max(0,Math.round(+String(e.target.value).replace(/[^0-9.]/g,''))||0);S.target=v;saveT(v);renderOverview();}
   else if(e.target.id==='hp-q'){S.q=e.target.value;S.limit=80;renderDrugs();}
