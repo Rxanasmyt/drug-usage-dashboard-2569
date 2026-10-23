@@ -983,6 +983,7 @@ function renderDetail(){
 
 /* ---------- compare ---------- */
 function renderCompare(){
+  if(!S.cmpInit){S.cmpInit=true;if(!S.cmp.length)S.cmp=scope().slice().sort((p,q)=>sum(rg(q.v))-sum(rg(p.v))).slice(0,5).map(x=>x.id);}
   const pal=colors();const list=S.cmp.map(id=>byId[id]).filter(Boolean);
   $('#cm-chips').innerHTML=list.map((x,i)=>'<span class="hp-cc"><i style="background:'+(pal[i%pal.length]||'var(--color-fg)')+'"></i>'+esc(x.label)+'<button data-act="cmprm" data-id="'+x.id+'" aria-label="เอาออก">×</button></span>').join('');
   const host=$('#cm-chart');

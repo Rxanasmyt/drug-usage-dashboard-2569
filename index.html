@@ -528,13 +528,22 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (prefers-reduced-motion:reduce){.od-s{transition:none}}
 @media (max-width:700px){.hp.fx .hp-kpi{transform:none!important}.hp-ticker.mv .tk-w{animation-duration:calc(var(--tkd,40s)*1.3)}}
 @media print{.hp-ticker,.hp-sp,.hp-pills{display:none!important}}
+
+/* ===== polish p12 ===== */
+.hp-hero h1 .nw{white-space:nowrap}
+@media (min-width:901px){.hp-stick{align-self:start;position:sticky;top:76px}}
+@media (max-width:700px){
+  .hp-hero h1{background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;color:var(--color-fg)!important}
+  .hp-kpis .hp-kpi:last-child:nth-child(odd){grid-column:1/-1}
+}
+@media (max-width:340px){.hp-hero h1 .nw{white-space:normal}}
 </style>
 <div id="hp" class="hp">
   <div class="hp-sp" aria-hidden="true"><i id="hp-spi"></i></div>
   <header class="hp-hero">
     <div>
       <span class="hp-eyebrow">เภสัชกรรม โรงพยาบาลกรงปินัง จ.ยะลา · ปีงบประมาณ <span id="hp-fy-e">2568–2569</span></span>
-      <h1>Dashboard แสดงปริมาณการใช้ยาและมูลค่าการใช้ยา ปีงบประมาณ <span id="hp-fy-t">2568–2569</span></h1>
+      <h1><span class="nw">Dashboard</span> <span class="nw">แสดงปริมาณการใช้ยา</span> <span class="nw">และมูลค่าการใช้ยา</span> <span class="nw">ปีงบประมาณ <span id="hp-fy-t">2568–2569</span></span></h1>
       <p class="hp-sub" id="hp-sub">ปีงบประมาณ 2569 · ต.ค. 2568 – ก.ย. 2569 · แหล่งข้อมูล: รายงานสรุปการใช้เวชภัณฑ์ยา (ที่บันทึกจ่ายยา) 12 เดือน</p>
     </div>
     <div class="hp-hn" id="hp-hero-n"></div>
@@ -596,7 +605,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div class="hp-grid w2">
       <div class="hp-card"><h2 id="ov-trend-h">แนวโน้มรายเดือน</h2><p class="hp-note" id="ov-trend-n"></p>
         <div class="hp-inl"><label class="hp-note" for="hp-tg">เป้าหมายต่อเดือน (บาท)</label><input id="hp-tg" type="search" inputmode="numeric" placeholder="ไม่บังคับ เช่น 800000" style="min-width:12rem;max-width:14rem"><span class="hp-note">เก็บในเบราว์เซอร์เครื่องนี้ แท่งที่เกินเป้าจะเป็นสีแดง</span></div><div class="hp-svg" id="ov-trend" style="min-height:260px"></div><div class="hp-lg" id="ov-trend-lg"></div></div>
-      <div class="hp-card"><h2>ข้อสังเกตจากตัวเลข</h2><p class="hp-note">สรุปจากตัวเลขตามตัวกรองที่เลือก เรียงข้อที่ควรสนใจก่อน</p><div class="hp-ins" id="ov-ins"></div></div>
+      <div class="hp-card hp-stick"><h2>ข้อสังเกตจากตัวเลข</h2><p class="hp-note">สรุปจากตัวเลขตามตัวกรองที่เลือก เรียงข้อที่ควรสนใจก่อน</p><div class="hp-ins" id="ov-ins"></div></div>
     </div>
     <div class="hp-grid w2">
       <div class="hp-card"><h2 id="ov-top-h">ยา 10 อันดับแรก</h2><p class="hp-note">กดที่แถวเพื่อดูแนวโน้มรายเดือนของยาตัวนั้น</p><div id="ov-top"></div></div>
