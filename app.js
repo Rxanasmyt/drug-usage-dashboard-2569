@@ -8,7 +8,7 @@ const sum=a=>{let t=0;for(let i=0;i<a.length;i++)t+=a[i];return t;};
 const MN={v:'มูลค่า',c:'ต้นทุน',q:'ปริมาณ',n:'จำนวนครั้งที่จ่าย'};
 const S={mode:'dis',from:1,to:12,view:'ALL',metric:'v',tab:'overview',q:'',active:true,sort:{k:'tot',d:-1},limit:80,cmp:[],cm:'v',detail:null,dm:'v',fy:null,cmpm:null};
 let anim='tab',animNow=null,animT=null;
-let ALLM=[],FYS=[],AV=12,HASP=false,SIG='',D=[],CATS=[],SYMS=[],MON=[],catBy={},symBy={},VIEWS=[],viewBy={},VL={dis:[],sym:[]},VB={dis:{},sym:{}},byId={},ready=false;
+let HC=null,ALLM=[],FYS=[],AV=12,HASP=false,SIG='',D=[],CATS=[],SYMS=[],MON=[],catBy={},symBy={},VIEWS=[],viewBy={},VL={dis:[],sym:[]},VB={dis:{},sym:{}},byId={},ready=false;
 const GR=()=>S.mode==='sym'?SYMS:CATS;
 const gk=x=>S.mode==='sym'?x.sym:x.cat;
 const gdef=x=>(S.mode==='sym'?symBy:catBy)[gk(x)];
@@ -224,8 +224,17 @@ function barChart(host,vals,o){
       s+='<path class="hp-flag" d="'+(hi?'M'+(cx-6)+' '+(cy-5)+'L'+(cx+6)+' '+(cy-5)+'L'+cx+' '+(cy+6)+'Z':'M'+(cx-6)+' '+(cy+5)+'L'+(cx+6)+' '+(cy+5)+'L'+cx+' '+(cy-6)+'Z')+'" style="fill:'+(hi?'var(--color-bad)':'var(--color-ok)')+'"/>';}
     if(W>=460||i%2===0)s+='<text class="hp-ax" x="'+(x(i)+x.bandwidth()/2).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle">'+esc(MON[i].short)+'</text>';
   });
+  (o.notes||[]).forEach(nt=>{const cx=x(nt.i)+x.bandwidth()/2,yt=y(vals[nt.i]);
+    s+='<line x1="'+cx.toFixed(1)+'" x2="'+cx.toFixed(1)+'" y1="20" y2="'+Math.max(22,yt-22).toFixed(1)+'" style="stroke:'+(nt.up?'var(--color-bad)':'var(--color-ok)')+'" stroke-width="1.2" stroke-dasharray="2 3"/><text class="hp-ax hp-note-t" x="'+cx.toFixed(1)+'" y="14" text-anchor="middle" style="font-weight:700;fill:'+(nt.up?'var(--color-bad)':'var(--color-ok)')+'">'+esc(nt.t)+'</text>';});
   PB[host.id]=bhs;
   if(avg>0)s+='<line x1="'+lm+'" x2="'+(W-8)+'" y1="'+y(avg)+'" y2="'+y(avg)+'" style="stroke:var(--cds-chart-reference)" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  if(o.prev){
+    const n=Math.min(AV,vals.length),cx=i=>x(i)+x.bandwidth()/2;let g='',poly=(pts,c)=>'<polygon points="'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'" style="fill:'+c+'"/>';
+    for(let i=0;i<n-1;i++){const e0=vals[i]-o.prev[i],e1=vals[i+1]-o.prev[i+1],x0=cx(i),x1=cx(i+1);
+      const a0=[x0,y(vals[i])],a1=[x1,y(vals[i+1])],b0=[x0,y(o.prev[i])],b1=[x1,y(o.prev[i+1])],cu=e=>e>0?cb:'var(--color-ok)';
+      if(e0*e1>=0){const e=e0!==0?e0:e1;if(e!==0)g+=poly([a0,a1,b1,b0],cu(e));}
+      else{const t=e0/(e0-e1),xc=x0+t*(x1-x0),yc=a0[1]+t*(a1[1]-a0[1]),c=[xc,yc];g+=poly([a0,c,b0],cu(e0))+poly([c,a1,b1],cu(e1));}}
+    if(g)s+='<clipPath id="'+gid+'w"><rect class="hp-wipe" x="'+lm+'" y="0" width="'+(W-lm)+'" height="'+H+'"/></clipPath><g class="hp-gaps" clip-path="url(#'+gid+'w)" style="opacity:.28">'+g+'</g>';}
   if(o.prev){const pp=o.prev.map((v,i)=>[x(i)+x.bandwidth()/2,y(v)]);s+='<path class="hp-prevl" d="'+d3.line()(pp)+'" fill="none" style="stroke:var(--cds-chart-reference)" stroke-width="2.2" stroke-dasharray="6 4" stroke-linecap="round"/>'+pp.map(p=>'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.6" style="fill:var(--cds-chart-reference)"/>').join('');}
   if(ma){const pts=ma.map((v,i)=>v==null?null:[x(i)+x.bandwidth()/2,y(v)]).filter(Boolean);
     s+='<path class="hp-line hp-ma" pathLength="1" d="'+d3.line().curve(d3.curveMonotoneX)(pts)+'" fill="none" style="stroke:'+(colors()[2]||'var(--color-fg)')+'" stroke-width="3.2" stroke-linecap="round"/>';}
@@ -240,6 +249,7 @@ function barChart(host,vals,o){
     if(o.target>0)t+='\n'+(v>o.target?'เกินเป้า '+nf(v-o.target)+' บาท':'ต่ำกว่าเป้า '+nf(o.target-v)+' บาท');
     s+='<rect data-col="'+i+'" data-gx="'+(x(i)+x.bandwidth()/2).toFixed(1)+'" x="'+x(i).toFixed(1)+'" y="0" width="'+x.step().toFixed(1)+'" height="'+(H-20)+'" fill="transparent" data-tip="'+esc(t)+'"/>';});
   s+='</svg>';host.innerHTML=s;
+  host.classList.toggle('mo-on',!!morph);
   if(morph)requestAnimationFrame(()=>requestAnimationFrame(()=>{host.querySelectorAll('.hp-bar.mo').forEach(b=>{b.style.transform='scaleY(1)';});}));
   return {avg:avg};
 }
@@ -281,14 +291,19 @@ function lineChart(host,list,metric){
   s+='</svg>';host.innerHTML=s;
 }
 function hoverCol(tg){
-  const c=tg.closest?tg.closest('[data-col]'):null;
-  $$('svg[data-hi]').forEach(sv=>{if(!c||sv!==c.closest('svg')){delete sv.dataset.hi;sv.querySelectorAll('.hi').forEach(n=>n.classList.remove('hi'));}});
-  if(!c)return;
-  const sv=c.closest('svg'),col=c.dataset.col;
-  if(!sv||sv.dataset.hi===col)return;
-  sv.dataset.hi=col;sv.querySelectorAll('.hi').forEach(n=>n.classList.remove('hi'));
-  sv.querySelectorAll('[data-i="'+col+'"]').forEach(n=>n.classList.add('hi'));
-  const g=sv.querySelector('.hp-guide');if(g){g.setAttribute('x1',c.dataset.gx);g.setAttribute('x2',c.dataset.gx);}
+  const c=tg&&tg.closest?tg.closest('[data-col]'):null;
+  const col=c?c.dataset.col:null;
+  if(HC===col)return;HC=col;
+  $$('svg[data-hi]').forEach(sv=>{if(col==null||!sv.querySelector('[data-col="'+col+'"]')){delete sv.dataset.hi;sv.querySelectorAll('.hi').forEach(n=>n.classList.remove('hi'));}});
+  $$('.chi').forEach(n=>n.classList.remove('chi'));
+  if(col==null)return;
+  $$('#hp .hp-svg svg').forEach(sv=>{
+    const r=sv.querySelector('[data-col="'+col+'"]');if(!r)return;
+    if(sv.dataset.hi!==col){
+      sv.dataset.hi=col;sv.querySelectorAll('.hi').forEach(n=>n.classList.remove('hi'));
+      sv.querySelectorAll('[data-i="'+col+'"]').forEach(n=>n.classList.add('hi'));}
+    const g=sv.querySelector('.hp-guide');if(g){g.setAttribute('x1',r.dataset.gx);g.setAttribute('x2',r.dataset.gx);}});
+  $$('#hp [data-c="'+col+'"]').forEach(n=>n.classList.add('chi'));
 }
 
 /* ---------- overview ---------- */
@@ -358,7 +373,7 @@ function renderOverview(){
   barChart($('#ov-trend'),sv,{ma:true,prev:pvS,flags:flagsOf(sv),target:S.target,aria:'แนวโน้มรายเดือน',tip:i=>{
     const prev=i>0&&sv[i-1]>0?sv[i]/sv[i-1]-1:null;
     return MON[i].full+' '+MON[i].year+'\n'+MN[m]+': '+nf(sv[i])+' บาท\n'+MN[m==='v'?'c':'v']+': '+nf(so[i])+' บาท'+(prev==null?'':'\nเทียบเดือนก่อน: '+sgn(prev,1))+(pvS?'\nปีงบ '+(S.fy-1)+': '+nf(pvS[i])+' บาท'+(pvS[i]>0?' ('+sgn(sv[i]/pvS[i]-1,0)+')':''):'');}});
-  $('#ov-trend-lg').innerHTML='<span style="--c:'+C0()+'">'+MN[m]+'</span><span class="ln" style="--c:'+(colors()[2]||'var(--color-fg)')+'">แนวโน้ม (เฉลี่ย 3 เดือน)</span><span class="ln" style="--c:var(--cds-chart-reference)">ค่าเฉลี่ย</span>'+(pvS?'<span class="ln dash" style="--c:var(--cds-chart-reference)">ปีงบ '+(S.fy-1)+' (เส้นประ)</span>':'')+(S.target?'<span class="ln" style="--c:var(--color-bad)">เป้า (แท่งแดง = เกินเป้า)</span>':'')+'<span class="nb"><b class="b-bad">▲</b> เดือนสูงผิดปกติ</span><span class="nb"><b class="b-ok">▼</b> เดือนต่ำผิดปกติ</span>';
+  $('#ov-trend-lg').innerHTML='<span style="--c:'+C0()+'">'+MN[m]+'</span><span class="ln" style="--c:'+(colors()[2]||'var(--color-fg)')+'">แนวโน้ม (เฉลี่ย 3 เดือน)</span><span class="ln" style="--c:var(--cds-chart-reference)">ค่าเฉลี่ย</span>'+(pvS?'<span class="ln dash" style="--c:var(--cds-chart-reference)">ปีงบ '+(S.fy-1)+' (เส้นประ)</span><span style="--c:var(--color-bad)">พื้นที่แดง = ใช้มากกว่าปีก่อน</span><span style="--c:var(--color-ok)">เขียว = น้อยกว่า</span>':'')+(S.target?'<span class="ln" style="--c:var(--color-bad)">เป้า (แท่งแดง = เกินเป้า)</span>':'')+'<span class="nb"><b class="b-bad">▲</b> เดือนสูงผิดปกติ</span><span class="nb"><b class="b-ok">▼</b> เดือนต่ำผิดปกติ</span>';
   // insights
   const ins=[];
   ins.push(['info','ภาพรวม','ช่วง '+rangeLabel()+' กลุ่ม “'+view().n+'” ใช้'+MN[m]+'ไปทั้งหมด <b>'+baht(tot)+' บาท</b> เฉลี่ยเดือนละ '+baht(avg)+' บาท'+(allv&&S.view!=='ALL'?' คิดเป็น '+pct(tot/allv,1)+' ของทั้งโรงพยาบาล':'')+' ส่วนต้นทุนอยู่ที่ราว '+(vtot?pct(ctot/vtot,0):'—')+' ของมูลค่า']);
@@ -497,6 +512,20 @@ function raceToggle(){
 }
 
 /* ---------- presentation ---------- */
+const PR={step:0,t:null,caps:[]};
+function prApply(){
+  const el=$('#hp-pres');if(!el)return;
+  el.dataset.step=String(PR.step);
+  const c=$('#pr-cap');if(c)c.textContent=PR.caps[PR.step]||'';
+  const b=$('#pr-story');if(b)b.textContent=PR.t?'⏸ หยุด':'▶ เล่นเรื่องราวอัตโนมัติ';
+}
+function prStop(){if(PR.t){clearInterval(PR.t);PR.t=null;}const el=$('#hp-pres');if(el)delete el.dataset.step;const b=$('#pr-story');if(b)b.textContent='▶ เล่นเรื่องราวอัตโนมัติ';}
+function prGo(d){PR.step=((PR.step+d)%6+6)%6;prApply();}
+function prToggle(){
+  if(PR.t){clearInterval(PR.t);PR.t=null;prApply();return;}
+  if(!$('#hp-pres').dataset.step)PR.step=0;
+  prApply();PR.t=setInterval(()=>prGo(1),5200);prApply();
+}
 function renderPres(){
   const rows=scope(),m=S.metric,sv=series(rows,m),r=rg(sv),tot=sum(r),di=deltaInfo(sv);
   const ci=makeCI(rows,m,di),mv=movers(rows,m,ci),allv=sum(rg(series(D,m)));
@@ -505,18 +534,31 @@ function renderPres(){
   const li=(arr,f)=>arr.length?arr.map(f).join(''):'<li class="hp-mut">ไม่มีรายการเด่นในช่วงนี้</li>';
   const sig=Math.max(3000,tot*.005);
   $('#pr-body').innerHTML=
-   '<div class="pr-top"><div class="pr-big"><span class="l">'+esc(view().n)+' · '+esc(rangeLabel())+'</span><span class="n">'+baht(tot)+'<small>'+(m==='n'?' ครั้ง':m==='q'?'':' บาท')+'</small></span><span class="s">'+MN[m]+'รวม · '+(ci&&ci.mode==='yoy'?'เทียบปีงบ '+(S.fy-1)+' '+trendWord(ci)+' (ช่วงเดียวกัน)':trendWord(di)+(di?' ('+di.k+' เดือนท้ายเทียบ '+di.k+' เดือนแรก)':''))+'</span></div><div class="hp-svg" id="pr-trend" style="min-height:280px"></div></div>'+
+   '<p class="pr-cap" id="pr-cap" aria-live="polite"></p><div class="pr-top"><div class="pr-big"><span class="l">'+esc(view().n)+' · '+esc(rangeLabel())+'</span><span class="n">'+baht(tot)+'<small>'+(m==='n'?' ครั้ง':m==='q'?'':' บาท')+'</small></span><span class="s">'+MN[m]+'รวม · '+(ci&&ci.mode==='yoy'?'เทียบปีงบ '+(S.fy-1)+' '+trendWord(ci)+' (ช่วงเดียวกัน)':trendWord(di)+(di?' ('+di.k+' เดือนท้ายเทียบ '+di.k+' เดือนแรก)':''))+'</span></div><div class="hp-svg" id="pr-trend" style="min-height:280px"></div></div>'+
    '<div class="pr-grid">'+
    '<div class="pr-c bad"><h3>ยาที่ดันค่าใช้จ่ายขึ้น</h3><ol>'+li(mv.up.filter(o=>o.dd>=sig).slice(0,3),o=>'<li><b>'+esc(o.x.name)+'</b><span class="up-bad">+'+baht(o.dd)+'</span></li>')+'</ol></div>'+
    '<div class="pr-c ok"><h3>ยาที่ลดลงมากสุด</h3><ol>'+li(mv.dn.filter(o=>-o.dd>=sig).slice(0,3),o=>'<li><b>'+esc(o.x.name)+'</b><span class="dn-ok">−'+baht(-o.dd)+'</span></li>')+'</ol></div>'+
    '<div class="pr-c"><h3>กลุ่มยาที่ใช้มากสุด</h3><ol>'+li(cs,a=>'<li><b>'+esc(a.c.short)+'</b><span>'+pct(a.t/tot,0)+'</span></li>')+'</ol></div>'+
    '<div class="pr-c warn"><h3>ควรทบทวน</h3><ol><li><b>พุ่งผิดปกติ</b><span>'+A.spike.length+' รายการ</span></li><li><b>แนวโน้มเพิ่ม</b><span>'+A.rise.length+' รายการ</span></li><li><b>นอกบัญชียังจ่าย</b><span>'+A.off.length+' รายการ</span></li></ol></div>'+
    '</div><p class="hp-note">สัดส่วนต่อมูลค่าทั้งโรงพยาบาล '+(allv?pct(tot/allv,1):'—')+' · ข้อมูลตามตัวกรองที่เลือกก่อนเข้าโหมดนำเสนอ</p>';
-  barChart($('#pr-trend'),sv,{ma:true,h:280,flags:flagsOf(sv),aria:'แนวโน้มรายเดือน',tip:i=>MON[i].full+' '+MON[i].year+'\n'+MN[m]+': '+nf(sv[i])+' บาท'});
+  {const pkI=r.reduce((p,v,i)=>v>r[p]?i:p,0),u=mv.up[0],d=mv.dn[0],c0=cs[0];
+   PR.caps=['ภาพรวม · '+rangeLabel()+' · '+MN[m]+'รวม '+baht(tot)+(m==='n'?' ครั้ง':m==='q'?'':' บาท')+(ci&&isFinite(ci.d)?(ci.mode==='yoy'?' · เทียบปีงบ '+(S.fy-1)+' ':' · แนวโน้ม ')+(ci.d>0?'เพิ่มขึ้น ':'ลดลง ')+pct(Math.abs(ci.d),1):''),
+    'แนวโน้มรายเดือน · เดือนสูงสุดคือ '+mlab(S.from-1+pkI)+' ('+nf(r[pkI])+')'+(HASP&&S.cmpm==='yoy'?' · เส้นประและพื้นที่สี = เทียบปีงบ '+(S.fy-1):''),
+    u&&u.dd>0?'ตัวดันค่าใช้จ่ายขึ้นมากสุดคือ '+u.x.name+' (+'+baht(u.dd)+' บาท)':'ยังไม่มียาที่ดันค่าใช้จ่ายขึ้นเด่นชัด',
+    d&&d.dd<0?'ยาที่ลดลงมากสุดคือ '+d.x.name+' (−'+baht(-d.dd)+' บาท)':'ยังไม่มียาที่ลดลงเด่นชัด',
+    c0?'กลุ่มที่ใช้มากสุดคือ '+c0.c.name+' ('+pct(c0.t/(tot||1),0)+')':'—',
+    'ควรทบทวน: พุ่งผิดปกติ '+A.spike.length+' รายการ · แนวโน้มเพิ่ม '+A.rise.length+' รายการ · นอกบัญชียังจ่าย '+A.off.length+' รายการ'];}
+  barChart($('#pr-trend'),sv,{ma:true,prev:HASP&&S.cmpm==='yoy'?pser(rows,m):null,h:280,flags:flagsOf(sv),aria:'แนวโน้มรายเดือน',tip:i=>MON[i].full+' '+MON[i].year+'\n'+MN[m]+': '+nf(sv[i])+' บาท'});
 }
 
 
 
+function playOnView(el){
+  if(reduced()||!window.IntersectionObserver){el.classList.add('play');return;}
+  const r=el.getBoundingClientRect();if(r.top<(window.innerHeight||800)*.85&&r.bottom>0){requestAnimationFrame(()=>el.classList.add('play'));return;}
+  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){el.classList.add('play');io.disconnect();}});},{threshold:.15});
+  io.observe(el);setTimeout(()=>el.classList.add('play'),6000);
+}
 function renderPVM(rows){
   const host=$('#ov-pvm'),card=host.closest('.hp-card');
   const yoy=HASP&&S.cmpm==='yoy';let pv,pq,labA,labB;
@@ -536,13 +578,17 @@ function renderPVM(rows){
   const dom=parts.slice().sort((p,q)=>Math.abs(q[1])-Math.abs(p[1]))[0];
   $('#ov-pvm-h').textContent='มูลค่าเปลี่ยนเพราะปริมาณหรือราคา · '+labB+' เทียบ '+labA;
   $('#ov-pvm-n').innerHTML='ช่วง '+esc(rangeLabel())+' มูลค่า'+(tot>=0?'เพิ่มขึ้น ':'ลดลง ')+'<b>'+baht(Math.abs(tot))+' บาท</b>'+(dp!=null&&isFinite(dp)?' ('+pct(Math.abs(dp),1)+')':'')+' · ส่วนที่มีผลมากที่สุดคือ <b>'+esc(dom[0])+'</b> ('+(dom[1]>=0?'+':'−')+baht(Math.abs(dom[1]))+' บาท) · แท่งแดง = ทำให้ค่าใช้จ่ายเพิ่ม แท่งเขียว = ทำให้ลด (ความยาวแท่งเปรียบเทียบกันเฉพาะส่วนที่เปลี่ยน ไม่ใช่สัดส่วนของยอดรวม) · ปริมาณเปรียบเทียบตามหน่วยนับของแต่ละรายการ';
-  const bar=(l,v,sub,tot)=>{const w=Math.max(1.5,Math.abs(v)/mx*100);return '<div class="pvm-r"><div class="pvm-l"><b>'+esc(l)+'</b><span class="hp-mut">'+esc(sub||'')+'</span></div><div class="pvm-t"><i class="'+(tot?'pv-tot':v>0?'pv-up':'pv-dn')+'" style="width:'+(tot?100:w).toFixed(1)+'%"></i></div><div class="pvm-v">'+(tot?nf(v):(v>=0?'+':'−')+nf(Math.abs(v)))+'</div></div>';};
+  let cum=A;let k=0;
+  const bar=(l,v,sub,tot)=>{
+    if(tot)return '<div class="pvm-r tot" style="--k:'+(k++)+'"><div class="pvm-l"><b>'+esc(l)+'</b><span class="hp-mut">'+esc(sub||'')+'</span></div><div class="pvm-t"></div><div class="pvm-v">'+nf(v)+'</div></div>';
+    cum+=v;const w=Math.max(1,Math.abs(v)/mx*50);
+    return '<div class="pvm-r" style="--k:'+(k++)+'"><div class="pvm-l"><b>'+esc(l)+'</b><span class="hp-mut">'+esc(sub||'')+'</span></div><div class="pvm-t"><i class="'+(v>0?'pv-up':'pv-dn')+'" style="width:'+w.toFixed(1)+'%;'+(v>0?'left:50%':'right:50%')+'"></i></div><div class="pvm-v">'+(v>=0?'+':'−')+nf(Math.abs(v))+'<small>สะสม '+nf(cum)+'</small></div></div>';};
   let t=bar(labA,A,'มูลค่ารวมของช่วงที่เลือก',true);
   parts.forEach(p=>{t+=bar(p[0],p[1],p[2]);});
   t+=bar(labB,B,'มูลค่ารวมของช่วงที่เลือก',true);
   const top=(L,fmt)=>{const a=L.filter(o=>Math.abs(o.e)>=1).sort((p,q)=>Math.abs(q.e)-Math.abs(p.e)).slice(0,5);return a.length?'<ol class="pvm-o">'+a.map(o=>'<li data-act="detail" data-id="'+o.x.id+'"><span class="n">'+esc(trunc(o.x.label,34))+'</span><b class="'+(o.e>0?'up-bad':'dn-ok')+'">'+(o.e>0?'+':'−')+nf(Math.abs(o.e))+'</b><span class="hp-mut">'+fmt(o)+'</span></li>').join('')+'</ol>':'<div class="hp-empty">ไม่มีรายการ</div>';};
   t+='<div class="pvm-cols"><div><h3>ปริมาณเปลี่ยนมากสุด</h3>'+top(LV,o=>nf(o.a)+' → '+nf(o.b)+' '+esc(o.x.unit||''))+'</div><div><h3>ราคาต่อหน่วยเปลี่ยนมากสุด</h3>'+top(LP,o=>nf1(o.a)+' → '+nf1(o.b)+' บาท/หน่วย')+'</div><div><h3>ยาที่เริ่ม/หยุดใช้</h3>'+top(LN,o=>o.t==='new'?'เริ่มใช้ใหม่':'หยุดใช้')+'</div></div>';
-  host.innerHTML=t;
+  host.className='pvm-w';host.innerHTML=t;playOnView(host);
 }
 function renderFYT(rows){
   const host=$('#ov-fy');
@@ -586,8 +632,8 @@ function renderLong(rows,m){
     if(!a.has)return;
     const v=ser[j],fi=FYS.indexOf(a.fy),c=colors()[fi%2]||C0();
     const yo=j>=12&&ser[j-12]>0?'\nเทียบเดือนเดียวกันปีก่อน: '+sgn(v/ser[j-12]-1,0):'';
-    s+='<rect class="hp-bar" style="--i:'+j+';fill:'+c+';opacity:'+(a.fy===S.fy?1:.55)+'" x="'+x(j).toFixed(1)+'" y="'+y(v).toFixed(1)+'" width="'+x.bandwidth().toFixed(1)+'" height="'+Math.max(0,y(0)-y(v)).toFixed(1)+'" rx="3"/>';
-    s+='<rect data-act="fy" data-y="'+a.fy+'" x="'+x(j).toFixed(1)+'" y="16" width="'+x.step().toFixed(1)+'" height="'+(H-46)+'" fill="transparent" style="cursor:pointer" data-tip="'+esc(a.full+' '+a.year+'\n'+MN[m]+': '+nf(v)+(m==='q'||m==='n'?'':' บาท')+yo+'\nกดเพื่อดูปีงบ '+a.fy)+'"/>';
+    s+='<rect class="hp-bar" data-i="'+(a.fm-1)+'" style="--i:'+j+';fill:'+c+';opacity:'+(a.fy===S.fy?1:.55)+'" x="'+x(j).toFixed(1)+'" y="'+y(v).toFixed(1)+'" width="'+x.bandwidth().toFixed(1)+'" height="'+Math.max(0,y(0)-y(v)).toFixed(1)+'" rx="3"/>';
+    s+='<rect data-col="'+(a.fm-1)+'" data-gx="'+(x(j)+x.bandwidth()/2).toFixed(1)+'" data-act="fy" data-y="'+a.fy+'" x="'+x(j).toFixed(1)+'" y="16" width="'+x.step().toFixed(1)+'" height="'+(H-46)+'" fill="transparent" style="cursor:pointer" data-tip="'+esc(a.full+' '+a.year+'\n'+MN[m]+': '+nf(v)+(m==='q'||m==='n'?'':' บาท')+yo+'\nกดเพื่อดูปีงบ '+a.fy)+'"/>';
     if(W>=640||a.fm%3===1)s+='<text class="hp-ax" x="'+(x(j)+x.bandwidth()/2).toFixed(1)+'" y="'+(H-14)+'" text-anchor="middle">'+esc(a.short)+'</text>';
   });
   const pts=ma.map((v,j)=>v==null?null:[x(j)+x.bandwidth()/2,y(v)]).filter(Boolean);
@@ -743,10 +789,10 @@ function renderGroups(){
   const hx=cs.filter(a=>a.t>0);
   const gm=cs.filter(a=>a.di&&isFinite(a.di.d)&&a.t>=5000);const gu=gm.slice().sort((p,q)=>q.di.d-p.di.d)[0],gd=gm.slice().sort((p,q)=>p.di.d-q.di.d)[0];
   headline($('#gr-head'),'info','กลุ่มใหญ่สุด: <b>'+esc(hx[0]?hx[0].c.name:'—')+'</b> ('+(hx[0]&&all?pct(hx[0].t/all,0):'—')+' ของทั้งหมด)'+(gu&&gu.di.d>.1?' · เพิ่มเร็วสุด: <b class="up-bad">'+esc(gu.c.short)+' ▲'+pct(gu.di.d,0)+'</b>':'')+(gd&&gd.di.d<-.1?' · ลดมากสุด: <b class="dn-ok">'+esc(gd.c.short)+' ▼'+pct(-gd.di.d,0)+'</b>':''));
-  let h='<table><thead><tr><th>กลุ่มยา</th>'+MON.map(x=>'<th>'+esc(x.short)+'</th>').join('')+'<th>รวม</th><th>แนวโน้ม</th>'+(HASP?'<th>เทียบปีงบ '+(S.fy-1)+'</th>':'')+'</tr></thead><tbody>';
+  let h='<table><thead><tr><th>กลุ่มยา</th>'+MON.map(x=>'<th data-c="'+MON.indexOf(x)+'">'+esc(x.short)+'</th>').join('')+'<th>รวม</th><th>แนวโน้ม</th>'+(HASP?'<th>เทียบปีงบ '+(S.fy-1)+'</th>':'')+'</tr></thead><tbody>';
   hx.forEach(a=>{
     const mx=d3.max(a.s)||1;
-    h+='<tr><td title="'+esc(a.c.name)+'">'+esc(a.c.short)+'</td>'+a.s.map((v,i)=>{const p=Math.round(v/mx*85);const inr=i+1>=S.from&&i+1<=S.to;return '<td data-tip="'+esc(a.c.name+' · '+MON[i].label+'\n'+nf(v)+' บาท')+'" style="--i:'+i+';background:color-mix(in srgb,'+gcol(a.c.code)+' '+p+'%,transparent);'+(inr?'':'opacity:.4')+'">'+(v>0?Math.round(v/1000):'·')+'</td>';}).join('')+'<td class="t">'+nf(a.t)+'</td><td>'+(a.di?deltaTag(a.di.d,true):'—')+'</td>'+(HASP?'<td>'+(a.yy!=null?deltaTag(a.yy,true):'—')+'</td>':'')+'</tr>';
+    h+='<tr><td title="'+esc(a.c.name)+'">'+esc(a.c.short)+'</td>'+a.s.map((v,i)=>{const p=Math.round(v/mx*85);const inr=i+1>=S.from&&i+1<=S.to;return '<td data-c="'+i+'" data-tip="'+esc(a.c.name+' · '+MON[i].label+'\n'+nf(v)+' บาท')+'" style="--i:'+i+';background:color-mix(in srgb,'+gcol(a.c.code)+' '+p+'%,transparent);'+(inr?'':'opacity:.4')+'">'+(v>0?Math.round(v/1000):'·')+'</td>';}).join('')+'<td class="t">'+nf(a.t)+'</td><td>'+(a.di?deltaTag(a.di.d,true):'—')+'</td>'+(HASP?'<td>'+(a.yy!=null?deltaTag(a.yy,true):'—')+'</td>':'')+'</tr>';
   });
   h+='</tbody></table>';$('#gr-heat').innerHTML=h;
 }
@@ -834,6 +880,20 @@ function renderScatter(){
 }
 
 /* ---------- detail ---------- */
+function priceNotes(x){
+  const off=ALLM.indexOf(MON[0]),N=ALLM.length,p=[];
+  for(let j=0;j<N;j++)p.push(ALLM[j].has&&x.A.q[j]>0&&x.A.v[j]>0?x.A.v[j]/x.A.q[j]:null);
+  const out=[];
+  if(sum(x.A.v)<5000)return out;
+  for(let j=2;j<N;j++){
+    const i=j-off;if(i<0||i>=AV)continue;
+    const a=p[j-1],b=p[j],z=p[j-2],c=j+1<N&&p[j+1]!=null?p[j+1]:b;
+    if(a==null||b==null||z==null||c==null)continue;
+    const ch=b/((a+z)/2)-1;
+    if(Math.abs(ch)>=.15&&Math.abs(a/z-1)<.08&&Math.abs(c/b-1)<.08)out.push({i:i,t:'ราคา/หน่วย '+(ch>0?'▲':'▼')+Math.abs(Math.round(ch*100))+'%',up:ch>0});
+  }
+  return out.slice(0,3);
+}
 function renderDetail(){
   const host=$('#hp-detail');
   const x=S.detail!=null?byId[S.detail]:null;
@@ -853,7 +913,7 @@ function renderDetail(){
   const tb=['v','c','q','n'].map(k=>'<tr><td style="text-align:left">'+(k==='q'?'ปริมาณ ('+esc(x.unit)+')':MN[k])+'</td>'+x[k].map((v,i)=>'<td'+(i+1>=S.from&&i+1<=S.to?'':' class="hp-mut"')+'>'+nf(v)+'</td>').join('')+'</tr>').join('');
   const tw=$('.hp-tw',host);tw.innerHTML='<table><thead><tr><th style="text-align:left">รายการ</th>'+MON.map(o=>'<th>'+esc(o.short)+'</th>').join('')+'</tr></thead><tbody>'+tb+'</tbody></table>';
   $$('#dt-m button',host).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===dm)));
-  barChart($('#dt-chart'),arr,{h:240,ma:true,prev:HASP?x['p'+dm]:null,flags:flagsOf(arr),aria:'แนวโน้มรายเดือนของ '+x.label,tip:i=>MON[i].full+' '+MON[i].year+'\n'+MN[dm]+': '+nf(arr[i])+(dm==='q'?' '+x.unit:dm==='n'?' ครั้ง':' บาท')});
+  barChart($('#dt-chart'),arr,{h:240,ma:true,notes:priceNotes(x),prev:HASP?x['p'+dm]:null,flags:flagsOf(arr),aria:'แนวโน้มรายเดือนของ '+x.label,tip:i=>MON[i].full+' '+MON[i].year+'\n'+MN[dm]+': '+nf(arr[i])+(dm==='q'?' '+x.unit:dm==='n'?' ครั้ง':' บาท')});
 }
 
 /* ---------- compare ---------- */
@@ -971,6 +1031,9 @@ document.addEventListener('click',e=>{
   else if(a==='copy'){copyText(buildSummary(),el);return;}
   else if(a==='fclr'){const w=el.dataset.w;if(w!=='range')S.view='ALL';if(w!=='view'){S.from=1;S.to=AV;}S.limit=80;}
   else if(a==='pres'){S.pres=!S.pres;try{if(S.pres&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{});else if(!S.pres&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});}catch(err){}}
+  else if(a==='story'){prToggle();return;}
+  else if(a==='storyn'){prGo(1);return;}
+  else if(a==='storyp'){prGo(-1);return;}
   else if(a==='print'){try{window.print();}catch(err){}return;}
   else if(a==='metric'){S.metric=el.dataset.m;}
   else if(a==='quick'){S.from=+el.dataset.a;S.to=Math.min(+el.dataset.b,AV);}
@@ -987,7 +1050,7 @@ document.addEventListener('click',e=>{
   else if(a==='cmpclear'){S.cmp=[];}
   else if(a==='cmptop'){const top=scope().slice().sort((p,q)=>sum(rg(q.v))-sum(rg(p.v))).slice(0,5).map(x=>x.id);S.cmp=top;}
   else if(a==='cmetric'){S.cm=el.dataset.m;}
-  anim=(a==='tab'||a==='pickcat'||a==='fy')?'tab':'data';go();
+  anim=(a==='tab'||a==='pickcat')?'tab':'data';go();
 });
 function scrollTop(){const r=$('#hp-filters');if(r&&r.scrollIntoView)r.scrollIntoView({block:'start'});}
 document.addEventListener('change',e=>{
@@ -1048,7 +1111,8 @@ function render(){
   syncControls();renderFbar();
   if(rt)rt.classList.toggle('pres',!!S.pres);
   if(S.tab!=='overview'||S.pres)raceStop();
-  if(S.pres){renderPres();countUps();return;}
+  if(S.pres){renderPres();countUps();if(PR.t||$('#hp-pres').dataset.step)prApply();return;}
+  prStop();
   renderDetail();
   if(S.tab==='overview')renderOverview();
   else if(S.tab==='groups')renderGroups();

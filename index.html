@@ -389,6 +389,30 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
 @keyframes pvgrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media (prefers-reduced-motion:reduce){.pvm-t i{animation:none}}
 @media (max-width:560px){.pvm-r{grid-template-columns:1fr auto}.pvm-t{grid-column:1/-1;order:3}}
+
+/* round 9: richer motion */
+@keyframes hpWipeW{from{width:0}}
+.hp.go .hp-wipe,.hp-svg.mo-on .hp-wipe{animation:hpWipeW 1.3s .45s cubic-bezier(.3,.6,.2,1) both}
+.hp-svg.mo-on .hp-ma,.hp-svg.mo-on .hp-prevl{animation:hpFade .8s .1s both}
+.pvm-t{position:relative;overflow:visible;background:color-mix(in srgb,var(--color-fg) 5%,transparent)}
+.pvm-t::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1.5px;background:var(--cds-chart-axis);z-index:1}
+.pvm-t i{position:absolute;top:0;bottom:0;height:auto;animation:none}
+.pvm-t i.pv-up{transform-origin:left center;border-radius:0 7px 7px 0}
+.pvm-t i.pv-dn{transform-origin:right center;border-radius:7px 0 0 7px}
+.pvm-r.tot{background:color-mix(in srgb,var(--hp-a) 7%,transparent);border-radius:10px;padding-inline:10px}
+.pvm-r.tot .pvm-v{font-size:1.2em}
+.pvm-v small{display:block;font-weight:400;font-size:11px;color:var(--color-fg-muted)}
+.pvm-w:not(.play) .pvm-r{opacity:0}
+.pvm-w:not(.play) .pvm-t i{transform:scaleX(0)}
+.pvm-w.play .pvm-r{animation:hpSlide .55s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--k,0)*.26s)}
+.pvm-w.play .pvm-t i{animation:pvgrow .8s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k,0)*.26s + .2s)}
+.chi{outline:2px solid var(--hp-a);outline-offset:-2px;background:color-mix(in srgb,var(--hp-a) 14%,transparent)}
+.hp-note-t{pointer-events:none}
+.pr-cap{margin:12px 0 4px;padding:12px 16px;border-radius:12px;background:color-mix(in srgb,var(--hp-a) 12%,var(--color-panel));font-weight:600;font-size:calc(var(--cds-font-size-body)*1.2);min-height:3.2em;line-height:1.5}
+#hp-pres[data-step] .pr-big,#hp-pres[data-step] #pr-trend,#hp-pres[data-step] .pr-c{opacity:.22;transition:opacity .6s,transform .6s,box-shadow .6s;filter:saturate(.7)}
+#hp-pres[data-step="0"] .pr-big,#hp-pres[data-step="1"] #pr-trend,#hp-pres[data-step="2"] .pr-c:nth-child(1),#hp-pres[data-step="3"] .pr-c:nth-child(2),#hp-pres[data-step="4"] .pr-c:nth-child(3),#hp-pres[data-step="5"] .pr-c:nth-child(4){opacity:1;filter:none;transform:scale(1.02);box-shadow:0 0 0 2px var(--hp-a),0 10px 30px color-mix(in srgb,var(--hp-a) 25%,transparent)}
+.hp-prbar{display:flex;gap:8px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){.pvm-w:not(.play) .pvm-r{opacity:1}.pvm-w:not(.play) .pvm-t i{transform:none}.pvm-w.play .pvm-r,.pvm-w.play .pvm-t i{animation:none}.hp.go .hp-wipe,.hp-svg.mo-on .hp-wipe,.hp-svg.mo-on .hp-ma{animation:none}}
 </style>
 <div id="hp" class="hp">
   <header class="hp-hero">
@@ -444,7 +468,7 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
   <div id="hp-msg" class="hp-msg" hidden>กำลังโหลดข้อมูล…</div>
 
   <section class="hp-pres hp-sec" id="hp-pres" hidden>
-    <div class="hp-prbar"><button class="hp-btn pri" data-act="pres">ออกจากโหมดนำเสนอ</button></div>
+    <div class="hp-prbar"><button class="hp-btn pri" data-act="pres">ออกจากโหมดนำเสนอ</button><button class="hp-btn" id="pr-story" data-act="story">▶ เล่นเรื่องราวอัตโนมัติ</button><button class="hp-btn" data-act="storyp">ก่อนหน้า</button><button class="hp-btn" data-act="storyn">ถัดไป</button></div>
     <div id="pr-body"></div>
   </section>
 
