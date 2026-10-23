@@ -117,7 +117,7 @@ function rebuildRange(){
   $('#hp-from').innerHTML=MON.map((_,i)=>opt(i)).join('');
   $('#hp-to').innerHTML=MON.map((_,i)=>opt(i)).join('');
   const f=MON[0],l=MON[AV-1];
-  $('#hp-sub').textContent='ปีงบประมาณ '+S.fy+' · '+f.full+' '+f.year+' – '+l.full+' '+l.year+(AV<12?' (มีข้อมูลถึงเดือนล่าสุด)':'')+' · '+nf(D.length)+' รายการยา · แหล่งข้อมูล: รายงานสรุปการใช้เวชภัณฑ์ยา (ที่บันทึกจ่ายยา) รายเดือน';
+  $('#hp-sub').textContent='ปีงบประมาณ '+S.fy+' · '+f.full+' '+f.year+' – '+l.full+' '+l.year+(AV<12?' (มีข้อมูลถึงเดือนล่าสุด)':'')+' · ข้อมูลล่าสุดถึง '+(()=>{let z=null;ALLM.forEach(x=>{if(x.has)z=x;});return z?z.full+' '+z.year:'-';})()+' · '+nf(D.length)+' รายการยา · แหล่งข้อมูล: รายงานสรุปการใช้เวชภัณฑ์ยา (ที่บันทึกจ่ายยา) รายเดือน';
   const yr=FYS.length>1?FYS[0]+'–'+FYS[FYS.length-1]:String(FYS[0]);
   ['#hp-fy-t','#hp-fy-e'].forEach(q=>{const e=$(q);if(e)e.textContent=yr;});
   const hl=ALLM.filter(x=>x.has).pop(),ft=$('#ft-last');if(ft&&hl)ft.textContent='(ข้อมูลล่าสุด: '+hl.full+' '+hl.year+')';
@@ -480,7 +480,6 @@ function renderOverview(){
   const mb=$('#ov-more-btn');if(mb)mb.textContent=S.more?'ซ่อนรายละเอียดเพิ่มเติม ▴':'ดูรายละเอียดเพิ่มเติม: แผนที่มูลค่า · เทียบก่อน-หลัง · อะไรทำให้ยอดเปลี่ยน · เล่นย้อนหลัง ▾';
   renderLong(rows,m);renderPVM(rows);renderFYT(rows);
   {const it=[];
-   it.push(['n',MN[m]+'รวม <b>'+baht(tot)+'</b>'+(m==='n'?' ครั้ง':m==='q'?'':' บาท')+(ci&&isFinite(ci.d)?' · '+(ci.mode==='yoy'?'เทียบปีงบ '+(S.fy-1):'แนวโน้ม')+' <b class="'+(ci.d>0?'up-bad':'dn-ok')+'">'+(ci.d>0?'▲ +':'▼ −')+pct(Math.abs(ci.d),1)+'</b>':'')]);
    if(r.length)it.push(['p','เดือนสูงสุดคือ <b>'+esc(mlab(S.from-1+pk))+'</b> ('+baht(r[pk])+')']);
    if(mvs.up[0])it.push(['u','ตัวดันขึ้นสูงสุด <b>'+esc(trunc(mvs.up[0].x.name,26))+'</b> <b class="up-bad">+'+baht(mvs.up[0].dd)+'</b>']);
    if(mvs.dn[0])it.push(['d','ลดลงมากสุด <b>'+esc(trunc(mvs.dn[0].x.name,26))+'</b> <b class="dn-ok">−'+baht(-mvs.dn[0].dd)+'</b>']);
@@ -1063,7 +1062,12 @@ function renderAlerts(){
   h+=onlyCard(rows);
   h+=sec('ชื่อรายการระบุว่าไม่มีในบัญชียา/รพ. แต่ยังมีการจ่าย','เรียงตามมูลค่า อาจเป็นยานอกบัญชีที่จัดหาเฉพาะราย ยาที่คัดออกแล้วแต่ชื่อในระบบยังไม่เปลี่ยน หรือยาที่ต้องส่งต่อ น่าตรวจดู เพราะเป็นจุดที่คุมค่าใช้จ่ายได้',lim(A.off).map(x=>alertCard('off','นอกบัญชี?','b-warn',x,'ทั้งปีรวม <b>'+nf(sum(x.v))+' บาท</b> ปริมาณ '+nf(sum(x.q))+' '+esc(x.unit)+' จ่ายใน '+x.v.filter(t=>t>0).length+' เดือน (ชื่อในระบบ: '+esc(x.raw)+')')));
   const idleTxt=A.idle.length?'<div class="hp-card"><h2>ไม่มีการเคลื่อนไหวทั้งปี <span class="hp-mut">('+A.idle.length+')</span></h2><p class="hp-note">รายการที่มีในรายงานแต่ไม่มีการจ่ายเลย 12 เดือน ใช้ประกอบการทบทวนบัญชียาและลดรายการค้างระบบ</p><div class="hp-inl" style="gap:6px">'+A.idle.slice(0,60).map(x=>'<span class="hp-badge b-mut" title="'+esc(x.raw)+'">'+esc(x.name)+'</span>').join('')+(A.idle.length>60?'<span class="hp-note">และอีก '+(A.idle.length-60)+' รายการ</span>':'')+'</div></div>':'';
-  $('#al-body').innerHTML=h+idleTxt;
+  const dq=[];
+  rows.forEach(x=>{const Q=x.A?x.A.q:x.q,V=x.A?x.A.v:x.v;let pv=null,pi=-1;
+    for(let i=0;i<Q.length;i++){if(Q[i]>0&&V[i]>0){const p=V[i]/Q[i];if(pv!=null&&(p/pv>2.5||pv/p>2.5))dq.push({x:x,i:i,a:pv,b:p,pi:pi,val:V[i]});pv=p;pi=i;}}});
+  dq.sort((p,q)=>q.val-p.val);
+  const dqTxt='<div class="hp-card"><h2>ข้อมูลที่ควรตรวจสอบกับรายงานต้นฉบับ <span class="hp-mut">('+dq.length+')</span></h2><p class="hp-note">ราคาต่อหน่วย (มูลค่า ÷ ปริมาณ) เปลี่ยนเกิน 2.5 เท่าระหว่างเดือนที่ใช้ติดกัน อาจเป็นการเปลี่ยนราคาจริง หรือการบันทึกข้อมูลคลาดเคลื่อน ตรวจจากตลอดทุกปีงบที่มีข้อมูล</p>'+(dq.length?'<div class="hp-grid w2">'+dq.slice(0,12).map(d=>'<div class="hp-in warn"><i></i><div><b>'+esc(d.x.label)+'</b> · '+esc(ALLM[d.pi].label)+' '+d.a.toFixed(2)+' → '+esc(ALLM[d.i].label)+' '+d.b.toFixed(2)+' บาท/หน่วย</div></div>').join('')+'</div>':'<div class="hp-empty">ไม่พบรายการ</div>')+'</div>';
+  $('#al-body').innerHTML=h+dqTxt+idleTxt;
 }
 
 /* ---------- search dropdown ---------- */
