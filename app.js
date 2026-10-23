@@ -6,7 +6,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 const nf=d3.format(',.0f'), nf1=d3.format(',.1f');
 const sum=a=>{let t=0;for(let i=0;i<a.length;i++)t+=a[i];return t;};
 const MN={v:'มูลค่า',c:'ต้นทุน',q:'ปริมาณ',n:'จำนวนครั้งที่จ่าย'};
-const S={mode:'dis',from:1,to:12,view:'ALL',metric:'v',tab:'overview',q:'',active:true,sort:{k:'tot',d:-1},limit:80,cmp:[],cm:'v',detail:null,dm:'v',fy:null,cmpm:null};
+const S={mode:'dis',from:1,to:12,view:'ALL',metric:'v',tab:'overview',q:'',active:true,sort:{k:'tot',d:-1},limit:80,cmp:[],cm:'v',detail:null,dm:'v',fy:null,cmpm:null,fopen:false};
 let anim='tab',animNow=null,animT=null;
 let HC=null,ALLM=[],FYS=[],AV=12,HASP=false,SIG='',D=[],CATS=[],SYMS=[],MON=[],catBy={},symBy={},VIEWS=[],viewBy={},VL={dis:[],sym:[]},VB={dis:{},sym:{}},byId={},ready=false;
 const GR=()=>S.mode==='sym'?SYMS:CATS;
@@ -131,6 +131,8 @@ function buildChips(){
 }
 function setMode(m){S.mode=m;VIEWS=VL[m];viewBy=VB[m];S.view='ALL';S.limit=80;buildChips();}
 function syncControls(){
+  {const f=$('#hp-filters');if(f)f.classList.toggle('open',!!S.fopen);const tg=$('#hp-ftog');
+   if(tg){tg.setAttribute('aria-expanded',String(!!S.fopen));const t=$('#hp-ftxt');if(t)t.textContent='ปีงบ '+S.fy+' · '+rangeLabel()+' · '+view().n;}}
   $('#hp-from').value=S.from;$('#hp-to').value=S.to;
   $$('#hp-fy button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.y===S.fy)));
   $$('#hp-cmpm button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===S.cmpm)));
@@ -1036,6 +1038,7 @@ document.addEventListener('click',e=>{
   else if(a==='storyp'){prGo(-1);return;}
   else if(a==='print'){try{window.print();}catch(err){}return;}
   else if(a==='metric'){S.metric=el.dataset.m;}
+  else if(a==='tfil'){S.fopen=!S.fopen;}
   else if(a==='quick'){S.from=+el.dataset.a;S.to=Math.min(+el.dataset.b,AV);}
   else if(a==='fy'){setFY(+el.dataset.y);rebuildRange();}
   else if(a==='cmpm'){S.cmpm=el.dataset.m;}
@@ -1067,6 +1070,7 @@ document.addEventListener('input',e=>{
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('#hp-gres').hidden=true;$('#hp-cres').hidden=true;}});
 
 /* ---------- tooltip ---------- */
+window.addEventListener('scroll',()=>{if(window.matchMedia&&matchMedia('(pointer:coarse)').matches){const t=$('#hp-tip');if(t&&!t.hidden)t.hidden=true;hoverCol(null);}},{passive:true});
 const tip=()=>$('#hp-tip');
 function tipText(el,html){const t=tip();if(!t)return;if(html){t.innerHTML=html.split('\n').map((l,i)=>i===0?l:esc(l).replace(/&lt;/g,'<')).join('<br>');}}
 document.addEventListener('mousemove',e=>{
@@ -1078,10 +1082,11 @@ document.addEventListener('mousemove',e=>{
   else{const lines=el.dataset.tip.split('\n');t.innerHTML='<b>'+esc(lines[0])+'</b>'+(lines.length>1?'<br>'+lines.slice(1).map(esc).join('<br>'):'');}
   t.hidden=false;
   const rb=root.getBoundingClientRect();
+  const w=t.offsetWidth,h=t.offsetHeight,touch=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
   let x=e.clientX-rb.left+14,y=e.clientY-rb.top+16;
-  const w=t.offsetWidth,h=t.offsetHeight;
-  if(x+w>rb.width-4)x=Math.max(4,e.clientX-rb.left-w-14);
-  if(y+h>root.scrollHeight)y=Math.max(4,y-h-30);
+  if(touch){x=e.clientX-rb.left-w/2;y=e.clientY-rb.top-h-28;if(y<4)y=e.clientY-rb.top+28;x=Math.min(Math.max(4,x),rb.width-w-4);}
+  else{if(x+w>rb.width-4)x=Math.max(4,e.clientX-rb.left-w-14);
+  if(y+h>root.scrollHeight)y=Math.max(4,y-h-30);}
   t.style.left=x+'px';t.style.top=y+'px';
 });
 document.addEventListener('scroll',()=>{const t=tip();if(t)t.hidden=true;},true);
@@ -1091,6 +1096,7 @@ document.addEventListener('scroll',()=>{const t=tip();if(t)t.hidden=true;},true)
 function tabInd(){
   const nav=$('#hp-tabs');if(!nav)return;const b=nav.querySelector('[aria-selected=true]');if(!b)return;
   nav.style.setProperty('--tx',b.offsetLeft+'px');nav.style.setProperty('--tw',b.offsetWidth+'px');
+  if(nav.scrollWidth>nav.clientWidth+2){const l=b.offsetLeft-(nav.clientWidth-b.offsetWidth)/2;try{nav.scrollTo({left:Math.max(0,l),behavior:reduced()?'auto':'smooth'});}catch(e){nav.scrollLeft=Math.max(0,l);}}
 }
 let rvT=null;
 function reveal(){
@@ -1122,7 +1128,9 @@ function render(){
   countUps();
   tabInd();reveal();
 }
-window.addEventListener('resize',tabInd);
+let rzT=null,LW=window.innerWidth;
+function onResize(){tabInd();clearTimeout(rzT);rzT=setTimeout(()=>{const w=window.innerWidth;if(w!==LW){LW=w;anim=null;if(ready)render();}},220);}
+window.addEventListener('resize',onResize);window.addEventListener('orientationchange',onResize);
 dash.onData(render);
 })();
 

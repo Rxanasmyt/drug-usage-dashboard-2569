@@ -15,11 +15,11 @@
 --cds-font-size-body:15px;--cds-font-size-caption:13px;--cds-pad-xs:6px;--cds-pad-sm:10px;--cds-pad-md:14px;--cds-pad-lg:20px;
 --cds-gap-sm:8px;--cds-gap-md:16px;--cds-gap-lg:24px;--cds-border:1px solid var(--color-border-line);
 --cds-chart-grid:#e1ecec;--cds-chart-muted:#9db8b8;--cds-chart-reference:#5f8082;--cds-chart-axis:#9db8b8;
---cds-surface-popover:#14292b;--cds-shadow-popover:0 8px 28px rgba(0,40,40,.28);--cds-ease-out:cubic-bezier(.2,.8,.2,1);--cds-dur-slow:.6s}
+--cds-surface-popover:#14292b;--hp-tipfg:#f1f8f8;--cds-shadow-popover:0 8px 28px rgba(0,40,40,.28);--cds-ease-out:cubic-bezier(.2,.8,.2,1);--cds-dur-slow:.6s}
 @media (prefers-color-scheme:dark){:root{--c0:#3cc6c4;--c1:#5adbd8;--c2:#f4a58c;--c3:#7fb7ba;--c4:#7bd0bb;--c5:#e58f78;
 --color-bg:#0c1a1b;--color-fg:#e6f2f2;--color-fg-muted:#92aeae;--color-panel:#132526;--color-border-line:#234040;
 --color-bad:#ff6b5f;--color-ok:#5bd68a;--color-warn:#f0a940;--cds-chart-grid:#1f3637;--cds-chart-muted:#527272;--cds-chart-reference:#86a6a6;--cds-chart-axis:#527272;
---cds-surface-popover:#e6f2f2;--cds-shadow-popover:0 8px 28px rgba(0,0,0,.6)}}
+--cds-surface-popover:#e6f2f2;--hp-tipfg:#14292b;--cds-shadow-popover:0 8px 28px rgba(0,0,0,.6)}}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:"Sarabun","Noto Sans Thai","Leelawadee UI","Thonburi","Tahoma",system-ui,sans-serif;padding:clamp(10px,2.5vw,28px);line-height:1.5}
 button,input,select{font:inherit;color:inherit}
@@ -150,7 +150,7 @@ h1,h2,h3,p{margin:0}
 .hp-cc{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--color-border-line);border-radius:999px;padding:4px 6px 4px 12px;background:var(--color-bg);font-size:var(--cds-font-size-caption)}
 .hp-cc i{width:10px;height:10px;border-radius:50%}
 .hp-cc button{border:0;background:transparent;font-size:1rem;line-height:1;padding:2px 6px}
-.hp-tip{position:absolute;z-index:50;pointer-events:none;background:var(--cds-surface-popover);border:1px solid var(--cds-border);border-radius:12px;box-shadow:var(--cds-shadow-popover);padding:var(--cds-pad-xs) var(--cds-pad-sm);font-size:var(--cds-font-size-caption);max-width:min(80vw,22rem);line-height:1.55}
+.hp-tip{position:absolute;z-index:50;pointer-events:none;color:var(--hp-tipfg,var(--color-fg));background:var(--cds-surface-popover);border:1px solid var(--cds-border);border-radius:12px;box-shadow:var(--cds-shadow-popover);padding:var(--cds-pad-xs) var(--cds-pad-sm);font-size:var(--cds-font-size-caption);max-width:min(80vw,22rem);line-height:1.55}
 .hp-tip b{font-weight:600}
 .hp-foot{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);line-height:1.7;border-top:1px solid var(--color-border-line);padding-top:var(--cds-pad-md)}
 .hp-foot p{margin:.25rem 0}
@@ -413,6 +413,78 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
 #hp-pres[data-step="0"] .pr-big,#hp-pres[data-step="1"] #pr-trend,#hp-pres[data-step="2"] .pr-c:nth-child(1),#hp-pres[data-step="3"] .pr-c:nth-child(2),#hp-pres[data-step="4"] .pr-c:nth-child(3),#hp-pres[data-step="5"] .pr-c:nth-child(4){opacity:1;filter:none;transform:scale(1.02);box-shadow:0 0 0 2px var(--hp-a),0 10px 30px color-mix(in srgb,var(--hp-a) 25%,transparent)}
 .hp-prbar{display:flex;gap:8px;flex-wrap:wrap}
 @media (prefers-reduced-motion:reduce){.pvm-w:not(.play) .pvm-r{opacity:1}.pvm-w:not(.play) .pvm-t i{transform:none}.pvm-w.play .pvm-r,.pvm-w.play .pvm-t i{animation:none}.hp.go .hp-wipe,.hp-svg.mo-on .hp-wipe,.hp-svg.mo-on .hp-ma{animation:none}}
+
+/* round 10: every device (phone / tablet / desktop) */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.hp{overflow-x:clip;padding-left:env(safe-area-inset-left,0);padding-right:env(safe-area-inset-right,0);padding-bottom:env(safe-area-inset-bottom,0)}
+.hp-ftog{display:none}
+.hp-filters input[type=search]{max-width:100%}
+.hp-tabs{scrollbar-width:none;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.hp-tabs::-webkit-scrollbar{display:none}
+.hp-tabs button{scroll-snap-align:center}
+.hp-tw{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.hp-svg svg{max-width:100%;height:auto}
+@media (hover:none){
+  .hp-kpi:hover,.pr-c:hover,.hp-gc:hover{transform:none;box-shadow:var(--hp-sh)}
+  .hp-tw tbody tr:hover{background:transparent}
+}
+@media (pointer:coarse){
+  .hp button,.hp select{min-height:44px}
+  .hp-filters select,.hp-filters input[type=search],.hp input[type=search]{min-height:44px;font-size:16px}
+  .hp-filters .hp-seg button{min-height:42px;padding:6px 14px;font-size:.9rem}
+  .hp-filters .hp-chip{min-height:40px;padding:6px 14px;font-size:.88rem}
+  .hp-tabs button{min-height:44px;padding:8px 18px}
+  .hp-chip,.hp-cc button{min-height:40px}
+  .hp-tw td,.hp-tw th{padding-top:11px;padding-bottom:11px}
+}
+@media (max-width:700px){
+  .hp{gap:12px}
+  .hp-hero{padding:16px;gap:12px}
+  .hp-hero::before{animation:none!important;filter:none!important;opacity:.55}
+  .hp-hero h1{font-size:clamp(1.35rem,6.4vw,1.75rem)}
+  .hp-eyebrow{flex-wrap:wrap}
+  .hp-tabs{align-self:stretch;margin-inline:calc(var(--dash-gutter,12px)*-.35)}
+  .hp-keybar{flex-direction:column;align-items:flex-start;gap:8px}
+  .hp-ftog{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--color-border-line);background:var(--color-panel);border-radius:12px;padding:10px 14px;box-shadow:var(--hp-sh)}
+  .hp-ftog .ic{font-size:1.15rem}
+  .hp-ftog .tx{flex:1;display:flex;flex-direction:column;min-width:0;line-height:1.35}
+  .hp-ftog .tx span{font-size:.78rem;color:var(--color-fg-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hp-ftog .ch{transition:transform .25s}
+  .hp-filters.open .hp-ftog .ch{transform:rotate(180deg)}
+  .hp-filters:not(.open)>*:not(.hp-ftog){display:none!important}
+  .hp-filters{padding-bottom:var(--cds-pad-sm);border-bottom:0}
+  .hp-filters .hp-fg{flex-direction:column;align-items:stretch;gap:4px;width:100%}
+  .hp-filters .hp-frow{gap:12px}
+  .hp-filters input[type=search],.hp-filters select{min-width:0;width:100%}
+  .hp-filters .hp-inl{flex-wrap:nowrap}.hp-filters .hp-inl select{flex:1}
+  .hp-filters .hp-seg{width:100%}.hp-filters .hp-seg button{flex:1 1 auto}
+  .hp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hp-kpi{padding:12px 14px}
+  .hp-kpi .n{font-size:1.45rem}
+  .hp-kpi .sp{position:static!important;order:9;margin-top:2px;max-width:100%}
+  .hp-card{padding:14px}
+  .hp-ax{font-size:12px}
+  .hp-tw td.nm{min-width:11rem}
+  .pvm-cols{gap:12px}
+  .hp-lg{gap:6px 12px;font-size:.78rem}
+  .hp-prbar .hp-btn{flex:1 1 auto}
+  .pr-cap{font-size:1.05rem}
+  .hp.pres{font-size:100%}
+  .hp-detail{padding:14px}
+}
+@media (min-width:701px) and (max-width:1100px){
+  .hp-hero h1{font-size:clamp(1.6rem,3.6vw,2.1rem)}
+  .hp-filters{position:static}
+  .hp-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:340px){
+  .hp-kpis{grid-template-columns:minmax(0,1fr)}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .hp-hero{padding:12px 16px}
+  .hp-filters{position:static!important}
+}
+@media (max-width:700px){.hp *{-webkit-tap-highlight-color:transparent}}
 </style>
 <div id="hp" class="hp">
   <header class="hp-hero">
@@ -434,6 +506,7 @@ svg circle.hp-dot[style*="--i:11"]{transform-box:fill-box;transform-origin:cente
   <div class="hp-keybar" id="hp-keybar"><span class="hp-key"><span class="up-bad">▲ แดง = เพิ่มขึ้น/เกินเป้า</span><span class="dn-ok">▼ เขียว = ลดลง</span><span class="flat">เทา = ใกล้เคียงเดิม (±3%)</span></span><span class="hp-keyb"><button class="hp-btn" data-act="copy">คัดลอกสรุป</button><button class="hp-btn" data-act="pres">โหมดนำเสนอ</button><button class="hp-btn" data-act="print">พิมพ์ / PDF</button></span></div>
   <div class="hp-fbar" id="hp-fbar" hidden></div>
   <div class="hp-filters" id="hp-filters">
+    <button class="hp-ftog" id="hp-ftog" data-act="tfil" aria-expanded="false" aria-controls="hp-filters"><span class="ic">⚙</span><span class="tx"><b>ตัวกรอง</b><span id="hp-ftxt"></span></span><span class="ch">▾</span></button>
     <div class="hp-frow">
       <div class="hp-fg"><label>ปีงบประมาณ</label><div class="hp-seg" id="hp-fy"></div></div>
       <div class="hp-fg" id="hp-cmpg"><label>เปรียบเทียบแบบ</label><div class="hp-seg" id="hp-cmpm"><button data-act="cmpm" data-m="yoy">กับปีงบก่อน</button><button data-act="cmpm" data-m="trend">ต้นช่วง → ท้ายช่วง</button></div></div>
