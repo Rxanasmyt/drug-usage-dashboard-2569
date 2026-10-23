@@ -199,8 +199,24 @@ function pills(){
   const cs=['var(--hp-a)','var(--hp-b)','var(--hp-c)'];let h='<div class="hp-pills" aria-hidden="true">';
   [[8,18,26,-24,11],[22,70,18,32,14],[46,12,14,60,9],[63,78,24,-50,16],[80,24,20,18,12],[90,62,16,-18,10],[34,44,12,40,13]].forEach((p,i)=>{
     h+='<span class="pl" style="left:'+p[0]+'%;top:'+p[1]+'%;--s:'+p[2]+';--r:'+p[3]+'deg;--d:'+p[4]+'s;--c1:'+cs[i%3]+';--c2:'+cs[(i+1)%3]+'"></span>';});
-  hero.insertAdjacentHTML('afterbegin',h+'</div>');
+  hero.insertAdjacentHTML('afterbegin',h+'<i class="hp-glow"></i></div>');
 }
+document.addEventListener('pointerdown',e=>{
+  if(!fx()||!e.target.closest)return;const b=e.target.closest('.hp-btn,.hp-chip,#hp-tabs button,.hp-ftog,.hp-seg button');
+  if(!b||!$('#hp')||!$('#hp').contains(b))return;
+  const r=b.getBoundingClientRect(),d=Math.max(r.width,r.height)*2,sp=document.createElement('span');
+  sp.className='rip';sp.style.cssText='width:'+d+'px;height:'+d+'px;left:'+(e.clientX-r.left-d/2)+'px;top:'+(e.clientY-r.top-d/2)+'px';
+  b.classList.add('rp');b.appendChild(sp);setTimeout(()=>sp.remove(),700);
+},{passive:true});
+document.addEventListener('pointermove',e=>{
+  if(!heavyFx()||e.pointerType==='touch'||!e.target.closest)return;
+  const hero=e.target.closest('.hp-hero');
+  if(hero){const r=hero.getBoundingClientRect();hero.style.setProperty('--gx',(e.clientX-r.left).toFixed(0)+'px');hero.style.setProperty('--gy',(e.clientY-r.top).toFixed(0)+'px');hero.classList.add('lit');}
+  else{const l=$('.hp-hero.lit');if(l)l.classList.remove('lit');}
+  const mb=e.target.closest('.hp-keyb .hp-btn');
+  $$('.hp-keyb .hp-btn').forEach(b=>{if(b!==mb)b.style.transform='';});
+  if(mb){const r=mb.getBoundingClientRect();mb.style.transform='translate('+(((e.clientX-r.left)/r.width-.5)*6).toFixed(1)+'px,'+(((e.clientY-r.top)/r.height-.5)*5).toFixed(1)+'px)';}
+},{passive:true});
 function clrSpot(){if(SP){SP.classList.remove('spot');SP.style.removeProperty('--rx');SP.style.removeProperty('--ry');SP=null;}}
 document.addEventListener('pointermove',e=>{
   if(!heavyFx()||e.pointerType==='touch'){return;}

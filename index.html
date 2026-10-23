@@ -549,6 +549,27 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .hp-filters{position:static!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important}
 .hp-filters.open{padding:0 0 var(--cds-pad-sm)!important;gap:var(--cds-gap-sm)}
 @media print{.hp-ftog{display:none!important}.hp-filters:not(.open)>*:not(.hp-ftog){display:revert!important}}
+
+/* ===== FX2: ripple, glow, hover lift, alert pulse ===== */
+.rp{position:relative;overflow:hidden}
+.rip{position:absolute;border-radius:50%;pointer-events:none;background:color-mix(in srgb,var(--hp-a) 35%,transparent);transform:scale(0);animation:hpRip .65s ease-out forwards}
+@keyframes hpRip{to{transform:scale(1);opacity:0}}
+@media (prefers-reduced-motion:no-preference){
+.hp.fx .hp-glow{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(320px circle at var(--gx,50%) var(--gy,50%),color-mix(in srgb,var(--hp-a) 20%,transparent),transparent 70%)}
+.hp.fx .hp-hero.lit .hp-glow{opacity:1}
+.hp.fx .hp-keyb .hp-btn{transition:transform .2s ease,background .2s,border-color .2s}
+.hp.fx .hp-bar{transition:filter .2s}
+.hp.fx .hp-bar:hover{filter:brightness(1.14) drop-shadow(0 3px 6px color-mix(in srgb,var(--hp-a) 45%,transparent))}
+.hp.fx .hp-badge.b-bad{animation:hpBadge 2.4s ease-out infinite}
+@keyframes hpBadge{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--color-bad) 45%,transparent)}70%,100%{box-shadow:0 0 0 9px transparent}}
+.hp.fx .hp-al,.hp.fx .hp-rc,.hp.fx .hp-tw tbody tr{transition:transform .2s ease,box-shadow .2s ease}
+.hp.fx .hp-al:hover{transform:translateX(4px);box-shadow:0 6px 18px color-mix(in srgb,var(--t) 18%,transparent)}
+.hp.fx .hp-tw tbody tr:hover .hp-line,.hp.fx .hp-hb:hover .hp-line{stroke-dasharray:1;stroke-dashoffset:1;animation:hpDraw .8s cubic-bezier(.3,.6,.2,1) forwards}
+.hp.fx .hp-chip{transition:transform .15s ease,background .2s,box-shadow .2s}
+.hp.fx .hp-chip:active,.hp.fx .hp-btn:active{transform:scale(.95)}
+.hp.fx #hp-tabs button[aria-selected=true]{animation:hpTabPop .5s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes hpTabPop{0%{transform:scale(.92)}100%{transform:scale(1)}}
+}
 </style>
 <div id="hp" class="hp">
   <div class="hp-sp" aria-hidden="true"><i id="hp-spi"></i></div>
