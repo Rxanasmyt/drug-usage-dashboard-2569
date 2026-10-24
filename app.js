@@ -220,6 +220,7 @@ document.addEventListener('pointermove',e=>{
   $$('.hp-keyb .hp-btn').forEach(b=>{if(b!==mb)b.style.transform='';});
   if(mb){const r=mb.getBoundingClientRect();mb.style.transform='translate('+(((e.clientX-r.left)/r.width-.5)*6).toFixed(1)+'px,'+(((e.clientY-r.top)/r.height-.5)*5).toFixed(1)+'px)';}
 },{passive:true});
+document.addEventListener('visibilitychange',()=>{const rt=$('#hp');if(rt)rt.classList.toggle('hid',document.hidden);});
 function clrSpot(){if(SP){SP.classList.remove('spot');SP.style.removeProperty('--rx');SP.style.removeProperty('--ry');SP=null;}}
 document.addEventListener('pointermove',e=>{
   if(!heavyFx()||e.pointerType==='touch'){return;}
@@ -232,7 +233,7 @@ document.addEventListener('pointermove',e=>{
 },{passive:true});
 document.addEventListener('pointerleave',clrSpot,true);
 window.addEventListener('scroll',()=>{
-  if(prT)return;prT=requestAnimationFrame(()=>{prT=0;const i=$('#hp-spi');if(!i)return;
+  if(prT)return;prT=requestAnimationFrame(()=>{prT=0;const rt=$('#hp');if(rt)rt.classList.toggle('far',(window.scrollY||0)>900);const i=$('#hp-spi');if(!i)return;
     const d=document.documentElement,max=(d.scrollHeight-d.clientHeight)||1;i.style.transform='scaleX('+Math.min(1,Math.max(0,(window.scrollY||d.scrollTop||0)/max)).toFixed(4)+')';});
 },{passive:true});
 function renderTicker(items){
@@ -507,14 +508,14 @@ function renderOverview(){
   hbars($('#ov-cat'),cs2.slice(0,12).map(a=>{const gs=series(rows.filter(x=>gk(x)===a.c.code),m);return {sp:gs.slice(0,AV),dtag:(d=>d==null?'':deltaTag(d.d,true))(deltaInfo(gs)),label:a.c.short,val:a.t,vtxt:baht(a.t)+' · '+pct(a.t/tot,0),color:gcol(a.c.code),attr:'data-act="pickcat" data-k="'+esc(a.c.code)+'"',tip:a.c.name+'\n'+nf(a.t)+' บาท ('+pct(a.t/tot,1)+')'};}));
   $('#ov-more').hidden=!S.more;
   const mb=$('#ov-more-btn');if(mb)mb.textContent=S.more?'ซ่อนรายละเอียดเพิ่มเติม ▴':'ดูรายละเอียดเพิ่มเติม: แผนที่มูลค่า · เทียบก่อน-หลัง · อะไรทำให้ยอดเปลี่ยน · เล่นย้อนหลัง ▾';
-  renderLong(rows,m);renderPVM(rows);renderFYT(rows);
+  defer(()=>{renderLong(rows,m);renderPVM(rows);renderFYT(rows);});
   {const it=[];
    if(r.length)it.push(['p','เดือนสูงสุดคือ <b>'+esc(mlab(S.from-1+pk))+'</b> ('+baht(r[pk])+')']);
    if(mvs.up[0])it.push(['u','ตัวดันขึ้นสูงสุด <b>'+esc(trunc(mvs.up[0].x.name,26))+'</b> <b class="up-bad">+'+baht(mvs.up[0].dd)+'</b>']);
    if(mvs.dn[0])it.push(['d','ลดลงมากสุด <b>'+esc(trunc(mvs.dn[0].x.name,26))+'</b> <b class="dn-ok">−'+baht(-mvs.dn[0].dd)+'</b>']);
    it.push(['i','ยาที่มีการใช้ <b>'+act+'</b> จาก '+rows.length+' รายการ · ช่วง '+esc(rangeLabel())]);
    renderTicker(it);}
-  if(S.more){renderTreemap(rows,m,ci,tot);renderSlope(rows,m,ci);renderWaterfall(rows,m,ci);renderRace();}else raceStop();
+  if(S.more){defer(()=>{renderTreemap(rows,m,ci,tot);renderSlope(rows,m,ci);renderWaterfall(rows,m,ci);renderRace();});}else raceStop();
 }
 
 function loadT(){try{const v=localStorage.getItem('hp_t_'+S.mode+'_'+S.view+'_'+S.metric);return v?+v||0:0;}catch(e){return 0;}}
@@ -885,7 +886,7 @@ document.addEventListener('pointercancel',()=>brushEnd(false));
 
 /* ---------- groups ---------- */
 function renderGroups(){
-  renderStack();renderCal();
+  defer(()=>{renderStack();renderCal();});
   const m=S.metric;const all=sum(rg(series(D,m)));
   const cs=GR().map(c=>{const rows=D.filter(x=>gk(x)===c.code);const s=series(rows,m);const tp=rows.map(x=>({x:x,t:sum(rg(x[m]))})).filter(a=>a.t>0).sort((a,b)=>b.t-a.t).slice(0,3).map(a=>a.x.name);return {c:c,s:s,t:sum(rg(s)),di:deltaInfo(s),yy:HASP?(()=>{const pr=sum(rgp(series(rows,'p'+m))),cu=sum(rg(s));return pr>0?cu/pr-1:(cu>0?Infinity:null);})():null,n:rows.filter(x=>sum(rg(x.v))>0).length,all:rows.length,tp:tp};}).sort((a,b)=>b.t-a.t);
   $('#gr-n').textContent='เรียงตาม'+MN[m]+'ในช่วง '+rangeLabel()+' · กดการ์ดเพื่อเลือกดูกลุ่มนั้น · เครื่องหมาย ▲▼ เทียบเดือนท้ายกับเดือนแรกของช่วงที่เลือก';
@@ -990,7 +991,7 @@ function eventNotes(rows,m){
   if(m!=='v'&&m!=='c')return [];
   const off=ALLM.indexOf(MON[0]),N=ALLM.length,ev=[];
   rows.slice().sort((p,q)=>sum(q.A.v)-sum(p.A.v)).slice(0,60).forEach(x=>{
-    const nm=x.name.replace(/^[^A-Za-z0-9\u0E00-\u0E7F]+/,'').split(/[\s(]/)[0].slice(0,12),V=x.A.v;
+    const nm=x.name.replace(/[()]/g,'').replace(/^[^A-Za-z0-9\u0E00-\u0E7F]+/,'').split(/[\s(]/)[0].slice(0,12),V=x.A.v;
     priceNotes(x).forEach(n=>ev.push({i:n.i,t:nm+(n.up?' ราคา▲':' ราคา▼'),up:n.up,w:V[off+n.i]||0}));
     let first=-1,last=-1;for(let j=0;j<N;j++)if(ALLM[j].has&&V[j]>0){if(first<0)first=j;last=j;}
     if(first>0){const i=first-off;if(i>=0&&i<AV&&V[first]>=6000)ev.push({i:i,t:nm+' เริ่มใช้',up:true,w:V[first]});}
@@ -1147,7 +1148,7 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('.hp-gs')){gres.hidden=true;cres.hidden=true;}
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act;
-  if(a==='tab'){S.tab=el.dataset.t;}
+  if(a==='tab'){const o=['overview','groups','drugs','compare','alerts'],d=o.indexOf(el.dataset.t)-o.indexOf(S.tab);const r=$('#hp');if(r)r.style.setProperty('--dir',d<0?-1:1);S.tab=el.dataset.t;}
   else if(a==='view'){setView(el.dataset.k);}
   else if(a==='ct'){S.ct=el.dataset.v;}
   else if(a==='tmz'){S.tmz=el.dataset.k||null;}
@@ -1237,8 +1238,10 @@ function reveal(){
   els.forEach((e,i)=>{e.dataset.rv='1';const r=e.getBoundingClientRect();if(r.top>vh*.95){e.classList.add('rv');e.style.setProperty('--d',(Math.min(i,4)*60)+'ms');io.observe(e);}});
   clearTimeout(rvT);rvT=setTimeout(()=>{$$('#hp .rv').forEach(e=>e.classList.add('in'));},3500);
 }
+let RTK=0;
+const defer=fn=>{const k=RTK;setTimeout(()=>{if(k===RTK)fn();},0);};
 function render(){
-  if(!prep())return;
+  if(!prep())return;RTK++;
   const rt=$('#hp');
   if(rt){const p=colors();['a','b','c','d'].forEach((k,i)=>rt.style.setProperty('--hp-'+k,p[i]||'var(--color-fg)'));
     if(anim==='tab'){rt.classList.add('go');clearTimeout(animT);animT=setTimeout(()=>rt.classList.remove('go'),2200);}}

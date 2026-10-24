@@ -584,6 +584,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .hp.fx .hp-tmbar+svg .hp-tml{animation:hpPop .5s cubic-bezier(.2,.9,.3,1.2) both;animation-delay:calc(var(--i,0)*30ms)}
 }
 @media print{.hp-scrub,.hp-ct{display:none!important}}
+
+/* ===== perf + directional tabs ===== */
+@keyframes hpSlideD{from{opacity:0;transform:translateX(calc(var(--dir,1)*22px))}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:no-preference){.hp.go .hp-sec{animation-name:hpSlideD}}
+.hp.hid .tk-w,.hp.hid .pl,.hp.hid .hp-badge,.hp.hid .hp-pulse,.hp.hid .hp-hero::before,.hp.far .tk-w,.hp.far .pl,.hp.far .hp-hero::before{animation-play-state:paused!important}
 </style>
 <div id="hp" class="hp">
   <div class="hp-sp" aria-hidden="true"><i id="hp-spi"></i></div>
