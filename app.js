@@ -118,6 +118,7 @@ function rebuildRange(){
   $('#hp-from').innerHTML=MON.map((_,i)=>opt(i)).join('');
   $('#hp-to').innerHTML=MON.map((_,i)=>opt(i)).join('');
   const f=MON[0],l=MON[AV-1];
+  {const lf=$('#lh-fy');if(lf)lf.textContent='ปีงบประมาณ '+S.fy+' ('+f.full+' '+f.year+' – '+l.full+' '+l.year+')';const ll=$('#lh-last');if(ll){let z=null;ALLM.forEach(x=>{if(x.has)z=x;});ll.textContent=z?'ข้อมูลล่าสุดถึง '+z.full+' '+z.year:'';}}
   $('#hp-sub').textContent='ปีงบประมาณ '+S.fy+' · '+f.full+' '+f.year+' – '+l.full+' '+l.year+(AV<12?' (มีข้อมูลถึงเดือนล่าสุด)':'')+' · ข้อมูลล่าสุดถึง '+(()=>{let z=null;ALLM.forEach(x=>{if(x.has)z=x;});return z?z.full+' '+z.year:'-';})()+' · '+nf(D.length)+' รายการยา · แหล่งข้อมูล: รายงานสรุปการใช้เวชภัณฑ์ยา (ที่บันทึกจ่ายยา) รายเดือน';
   const yr=FYS.length>1?FYS[0]+'–'+FYS[FYS.length-1]:String(FYS[0]);
   ['#hp-fy-t','#hp-fy-e'].forEach(q=>{const e=$(q);if(e)e.textContent=yr;});
@@ -135,7 +136,7 @@ function syncControls(){
   $$('#ov-ct button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.ct)));
   {const r=$('#sc-r');if(r){r.max=String(AV);r.min='1';r.value=String(Math.min(S.to,AV));const l=$('#sc-l');if(l)l.textContent=(S.from>1?mlab(S.from-1)+' – ':'ต.ค. – ')+mlab(S.to-1);
     const p=$('#sc-play');if(p)p.textContent=SC.t?'⏸ หยุด':'▶ เล่น';}}
-  {const fb=$('#hp-fxb');if(fb){fb.setAttribute('aria-pressed',String(FXON));fb.textContent='✨ เอฟเฟกต์ภาพ: '+(FXON?'เปิด':'ปิด');}}
+  {const fb=$('#hp-fxb');if(fb){fb.setAttribute('aria-pressed',String(FXON));fb.textContent='เอฟเฟกต์ภาพ: '+(FXON?'เปิด':'ปิด');}}
   {const f=$('#hp-filters');if(f)f.classList.toggle('open',!!S.fopen);const tg=$('#hp-ftog');
    if(tg){tg.setAttribute('aria-expanded',String(!!S.fopen));const t=$('#hp-ftxt');if(t)t.textContent='ปีงบ '+S.fy+' · '+rangeLabel()+' · '+view().n;}}
   $('#hp-from').value=S.from;$('#hp-to').value=S.to;
@@ -179,8 +180,8 @@ function flagsOf(arr){
   a0.forEach((v,i)=>{const z=(v-m)/sd;if(z>=1.5)f.push({i:i,t:'hi',z:z});else if(z<=-1.5)f.push({i:i,t:'lo',z:z});});
   return f;
 }
-const FXK='hp_fx';let FXON=true,INTRO=false,SP=null,spT=0,prT=0;
-try{if(localStorage.getItem(FXK)==='0')FXON=false;}catch(e){}
+const FXK='hp_fx';let FXON=false,INTRO=false,SP=null,spT=0,prT=0;
+try{if(localStorage.getItem(FXK)==='1')FXON=true;}catch(e){}
 const lowEnd=()=>{try{return (navigator.deviceMemory&&navigator.deviceMemory<=2)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=2);}catch(e){return false;}};
 const fx=()=>FXON&&!reduced();
 const coarse=()=>!!(window.matchMedia&&matchMedia('(pointer:coarse)').matches);

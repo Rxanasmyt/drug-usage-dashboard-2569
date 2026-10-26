@@ -641,10 +641,53 @@ body{background:radial-gradient(900px 520px at 100% -5%,color-mix(in srgb,var(--
 .tour-hl{outline:3px solid var(--hp-salmon);outline-offset:4px;border-radius:14px;transition:outline-color .3s}
 @media (prefers-reduced-motion:no-preference){.hp-ticker.mv .tk-w{animation-iteration-count:2}.tour-hl{animation:hpTour 1.6s ease-in-out infinite}@keyframes hpTour{50%{outline-color:color-mix(in srgb,var(--hp-salmon) 30%,transparent)}}}
 @media print{.hp-tour{display:none!important}}
+
+/* ===== FORMAL / OFFICIAL HOSPITAL LOOK ===== */
+.hp-lh{display:flex;justify-content:space-between;align-items:center;gap:14px 24px;flex-wrap:wrap;padding:6px 2px 12px;margin:0 0 14px;border-bottom:3px double var(--hp-teal)}
+.lh-l{display:flex;align-items:center;gap:12px}
+.lh-mark{display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#00777a,#00958f);flex:none}
+.lh-n{display:flex;flex-direction:column;line-height:1.3}.lh-n b{font-size:1.2rem;font-weight:700;letter-spacing:.01em}
+.lh-n span,.lh-r span{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.lh-r{display:flex;flex-direction:column;text-align:right;line-height:1.4}.lh-r b{font-weight:700;color:var(--hp-teal);filter:brightness(.8)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .lh-r b{filter:none}}
+:root[data-theme=dark] .lh-r b{filter:none}
+@media (max-width:600px){.lh-r{text-align:left}}
+body{background:var(--color-bg)!important}
+.hp-hero{background:var(--color-panel)!important;border:1px solid var(--color-border-line)!important;border-top:4px solid var(--hp-teal)!important;border-radius:var(--hp-r)!important;box-shadow:0 1px 3px color-mix(in srgb,var(--color-fg) 8%,transparent)!important}
+.hp-hero::before,.hp-hero::after{display:none!important}
+.hp-eyebrow{display:none}
+.hp-hero h1{background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;color:var(--color-fg)!important;font-weight:700}
+.hp-tabs button[aria-selected=true]{background:#00777a!important;box-shadow:none!important}
+.hp-kpi{background:var(--color-panel)!important;border-color:var(--color-border-line)!important}
+.hp-kpi::after{height:3px!important}
+.hp-kpi .l{color:var(--color-fg-muted)!important;font-weight:600}
+.hp-card h2::before,.hp-card:nth-of-type(4n+2) h2::before,.hp-card:nth-of-type(4n+3) h2::before,.hp-card:nth-of-type(4n) h2::before{background:var(--hp-teal)!important}
+.hp-card{border-color:var(--color-border-line)!important;box-shadow:0 1px 3px color-mix(in srgb,var(--color-fg) 7%,transparent)!important}
+.hp-gc{background:var(--color-panel)}
+.hp-ticker{background:var(--color-panel);border-color:var(--color-border-line)}
+.hp-headline{box-shadow:none}
+.hp-sp i{background:var(--hp-teal)!important}
+.hp-foot .ft-id{color:var(--color-fg)}
+.hp-foot{border-top:3px double var(--hp-teal)}
+@media print{
+ @page{size:A4;margin:12mm 12mm 16mm;@bottom-center{content:"โรงพยาบาลกรงปินัง · กลุ่มงานเภสัชกรรม · หน้า " counter(page) " / " counter(pages);font-size:9pt;color:#555}}
+ .hp-lh{display:flex!important;break-after:avoid}
+ body{background:#fff!important}
+ .hp-card,.hp-kpi,.hp-hero{break-inside:avoid;box-shadow:none!important}
+}
+
+.hp-kpi,.hp-kpi:nth-child(n){--k:var(--hp-teal)!important}
+.hp-ticker:not(.mv) .tk-r{flex-wrap:nowrap;overflow-x:auto;gap:30px;scrollbar-width:thin}
+.hp-hero{min-height:0!important;align-content:start}
 </style>
 <div id="hp" class="hp">
   <div class="hp-sp" aria-hidden="true"><i id="hp-spi"></i></div>
   <div class="hp-tour" id="hp-tour" hidden role="dialog" aria-label="วิธีอ่าน dashboard"><b id="tt-t"></b><p id="tt-p"></p><div class="tb"><span id="tt-n"></span><button class="hp-btn" data-act="tourskip">ข้าม</button><button class="hp-btn pri" data-act="tournext">ถัดไป →</button></div></div>
+  <div class="hp-lh" role="banner">
+    <div class="lh-l"><span class="lh-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" fill="#fff"/></svg></span>
+      <div class="lh-n"><b>โรงพยาบาลกรงปินัง</b><span>จังหวัดยะลา · กลุ่มงานเภสัชกรรม</span></div></div>
+    <div class="lh-r"><b>รายงานสรุปการใช้ยาและเวชภัณฑ์</b><span id="lh-fy"></span><span id="lh-last"></span></div>
+  </div>
   <header class="hp-hero">
     <div>
       <span class="hp-eyebrow">เภสัชกรรม โรงพยาบาลกรงปินัง จ.ยะลา · ปีงบประมาณ <span id="hp-fy-e">2568–2569</span></span>
@@ -662,10 +705,10 @@ body{background:radial-gradient(900px 520px at 100% -5%,color-mix(in srgb,var(--
     <button role="tab" data-act="tab" data-t="alerts">ความผิดปกติและข้อสังเกต</button>
   </nav>
   <div class="hp-ticker" id="hp-ticker" hidden role="region" aria-label="ไฮไลต์ข้อมูล"><div id="hp-tk" class="tk-w"></div></div>
-  <div class="hp-keybar" id="hp-keybar"><span class="hp-key"><span class="up-bad">▲ แดง = เพิ่มขึ้น/เกินเป้า</span><span class="dn-ok">▼ เขียว = ลดลง</span><span class="flat">เทา = ใกล้เคียงเดิม (±3%)</span></span><span class="hp-keyb"><button class="hp-btn" data-act="copy">คัดลอกสรุป</button><button class="hp-btn" data-act="pres">โหมดนำเสนอ</button><button class="hp-btn" data-act="print">พิมพ์ / PDF</button><button class="hp-btn" data-act="tour">❓ วิธีอ่าน</button><button class="hp-btn" id="hp-fxb" data-act="fx" aria-pressed="true">✨ เอฟเฟกต์ภาพ: เปิด</button></span></div>
+  <div class="hp-keybar" id="hp-keybar"><span class="hp-key"><span class="up-bad">▲ แดง = เพิ่มขึ้น/เกินเป้า</span><span class="dn-ok">▼ เขียว = ลดลง</span><span class="flat">เทา = ใกล้เคียงเดิม (±3%)</span></span><span class="hp-keyb"><button class="hp-btn" data-act="copy">คัดลอกสรุป</button><button class="hp-btn" data-act="pres">โหมดนำเสนอ</button><button class="hp-btn" data-act="print">พิมพ์ / PDF</button><button class="hp-btn" data-act="tour">วิธีอ่าน</button><button class="hp-btn" id="hp-fxb" data-act="fx" aria-pressed="true">✨ เอฟเฟกต์ภาพ: เปิด</button></span></div>
   <div class="hp-fbar" id="hp-fbar" hidden></div>
   <div class="hp-filters" id="hp-filters">
-    <button class="hp-ftog" id="hp-ftog" data-act="tfil" aria-expanded="false" aria-controls="hp-filters"><span class="ic">⚙</span><span class="tx"><b>ตัวกรอง</b><span id="hp-ftxt"></span></span><span class="ch">▾</span></button>
+    <button class="hp-ftog" id="hp-ftog" data-act="tfil" aria-expanded="false" aria-controls="hp-filters"><span class="ic" aria-hidden="true">▾</span><span class="tx"><b>ตัวกรอง</b><span id="hp-ftxt"></span></span><span class="ch">▾</span></button>
     <div class="hp-frow">
       <div class="hp-fg"><label>ปีงบประมาณ</label><div class="hp-seg" id="hp-fy"></div></div>
       <div class="hp-fg" id="hp-cmpg"><label>เปรียบเทียบแบบ</label><div class="hp-seg" id="hp-cmpm"><button data-act="cmpm" data-m="yoy">กับปีงบก่อน</button><button data-act="cmpm" data-m="trend">ต้นช่วง → ท้ายช่วง</button></div></div>
@@ -784,6 +827,8 @@ body{background:radial-gradient(900px 520px at 100% -5%,color-mix(in srgb,var(--
   </section>
 
   <footer class="hp-foot" id="hp-foot">
+    <p class="ft-id"><b>จัดทำโดย</b> กลุ่มงานเภสัชกรรม โรงพยาบาลกรงปินัง จังหวัดยะลา · <b>แหล่งข้อมูล</b> รายงานสรุปการใช้เวชภัณฑ์ยา (ที่บันทึกจ่ายยา) รายเดือน</p>
+    <p class="ft-id"><b>ข้อควรทราบ</b> ตัวเลขในรายงานนี้ใช้เพื่อประกอบการบริหารจัดการยาและเวชภัณฑ์ การนำไปอ้างอิงอย่างเป็นทางการควรตรวจสอบกับรายงานต้นฉบับ ส่วน "ความผิดปกติ" เป็นสัญญาณให้ตรวจสอบ ไม่ใช่ข้อสรุปทางคลินิก</p>
     <p><b>นิยาม</b> มูลค่า = คอลัมน์ “มูลค่า(บาท)” ต้นทุน = “ต้นทุน(บาท)” ปริมาณ = “จำนวน” ตามหน่วยนับของยาแต่ละรายการ (รวมข้ามยาต่างชนิดไม่ได้ จึงแสดงปริมาณเป็นรายตัว) จำนวนครั้งที่จ่าย = คอลัมน์ “รายการ” ในรายงาน</p>
     <p><b>การจัดกลุ่ม</b> จัดกลุ่มโรคจากชื่อและข้อบ่งใช้หลักของยาแต่ละรายการ ยาใช้ร่วมหลายโรค (เช่น Seretide, Symbicort, Berodual, Salbutamol NB) แยกเป็น “COPD/หอบหืด (ใช้ร่วม)” และนับรวมในทั้งสองคลินิกเมื่อเลือกดู จึงผลรวมของ COPD กับหอบหืดจะซ้ำกัน ยาบางรายการอาจใช้ต่างจากข้อบ่งใช้หลัก (เช่น propranolol, calcium carbonate, sodium bicarbonate) ควรให้เภสัชกรทบทวน</p>
     <p><b>การตรวจความผิดปกติ</b> เป็นสัญญาณให้ตรวจสอบ ไม่ใช่ข้อสรุปทางคลินิก ใช้มูลค่ารายเดือนของยาแต่ละรายการ รายละเอียดเกณฑ์อยู่ในแท็บ “ความผิดปกติและข้อสังเกต”</p>
