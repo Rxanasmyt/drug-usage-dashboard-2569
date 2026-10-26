@@ -714,6 +714,43 @@ body{background:var(--color-bg)!important}
  .ex-t{margin-top:8px}.ex-s{margin:9px 0 3px}.ex-p{font-size:.86rem;margin:2px 0}.ex-g ol{font-size:.82rem}.ex-h img{height:38px}.ex-sig{margin-top:18px}.ex-f{margin-top:8px}
  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* ===== COLOURFUL-FORMAL (palette from the hospital logo) ===== */
+.hp{--hp-sal-d:color-mix(in srgb,#e9806a 62%,var(--color-fg))}
+.hp-hero{border-top:0!important;background:linear-gradient(90deg,#00777a,#00a9ab 58%,#e9806a) top/100% 5px no-repeat,radial-gradient(70% 130% at 100% 0%,color-mix(in srgb,var(--hp-teal) 9%,transparent),transparent 70%),var(--color-panel)!important}
+.hp-hero h1 .nw:last-child,.hp-hero h1 em{color:var(--hp-teal)}
+.hp-lh{border-bottom:0;position:relative;padding-bottom:14px}
+.hp-lh::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;border-radius:3px;background:linear-gradient(90deg,#00777a 0,#00a9ab 62%,#e9806a 62%,#e9806a 100%)}
+.hp-tabs{background:color-mix(in srgb,var(--hp-teal) 9%,var(--color-panel))!important;border:1px solid color-mix(in srgb,var(--hp-teal) 22%,var(--color-border-line))!important}
+.hp-tabs button[aria-selected=true]{background:linear-gradient(135deg,#00777a,#00908f)!important;color:#fff!important}
+.hp-tabs button:not([aria-selected=true]):hover{background:color-mix(in srgb,var(--hp-teal) 12%,transparent)}
+.hp-kpis .hp-kpi{--kc:var(--hp-teal)}
+.hp-kpis .hp-kpi:nth-child(2){--kc:#e9806a}
+.hp-kpis .hp-kpi:nth-child(3){--kc:var(--hp-indigo)}
+.hp-kpis .hp-kpi:nth-child(4){--kc:var(--hp-amber)}
+.hp-kpis .hp-kpi:nth-child(5){--kc:var(--hp-violet)}
+.hp-kpis .hp-kpi:nth-child(6){--kc:var(--hp-sky)}
+.hp-kpi{border-top:4px solid var(--kc,var(--hp-teal))!important;background:linear-gradient(180deg,color-mix(in srgb,var(--kc,var(--hp-teal)) 11%,var(--color-panel)),var(--color-panel) 72%)!important}
+.hp-kpi::after{display:none!important}
+.hp-kpi .n{color:color-mix(in srgb,var(--kc,var(--hp-teal)) 62%,var(--color-fg))}
+.hp-card{--cc:var(--hp-teal);border-top:3px solid color-mix(in srgb,var(--cc) 60%,var(--color-border-line))!important}
+.hp-card:nth-of-type(4n+2){--cc:#e9806a}.hp-card:nth-of-type(4n+3){--cc:var(--hp-indigo)}.hp-card:nth-of-type(4n){--cc:var(--hp-amber)}
+.hp-card h2::before,.hp-card:nth-of-type(4n+2) h2::before,.hp-card:nth-of-type(4n+3) h2::before,.hp-card:nth-of-type(4n) h2::before{background:var(--cc)!important}
+.hp-card h2{color:color-mix(in srgb,var(--cc) 48%,var(--color-fg))}
+.hp-tw thead th{background:color-mix(in srgb,var(--hp-teal) 13%,var(--color-panel))!important;border-bottom:2px solid var(--hp-teal)!important;color:color-mix(in srgb,var(--hp-teal) 45%,var(--color-fg))}
+.hp-tw tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--hp-teal) 4.5%,var(--color-panel))}
+.hp-tw tbody tr[data-act]:hover td{background:color-mix(in srgb,#e9806a 14%,var(--color-panel))}
+.hp-gd{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.hp-chip::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gc,var(--hp-teal));margin-right:6px;vertical-align:baseline}
+.hp-chip[aria-pressed=true]{background:color-mix(in srgb,var(--gc,var(--hp-teal)) 17%,var(--color-panel))!important;border-color:var(--gc,var(--hp-teal))!important;font-weight:700}
+.hp-btn:hover{border-color:var(--hp-teal);background:color-mix(in srgb,var(--hp-teal) 8%,var(--color-panel))}
+.hp-btn[data-act=exec]{border-color:#e9806a;color:var(--hp-sal-d);font-weight:600;background:color-mix(in srgb,#e9806a 8%,var(--color-panel))}
+.hp-btn[data-act=exec]:hover{background:color-mix(in srgb,#e9806a 18%,var(--color-panel))}
+.hp-mut{color:color-mix(in srgb,var(--color-fg) 74%,var(--color-panel))}
+.hp-how summary{color:color-mix(in srgb,var(--hp-teal) 70%,var(--color-fg))}
+.hp-foot{border-top:0;position:relative}
+.hp-foot::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;border-radius:2px;background:linear-gradient(90deg,#00777a 0,#00a9ab 62%,#e9806a 62%)}
+@media print{.hp-lh::after,.hp-foot::before{-webkit-print-color-adjust:exact;print-color-adjust:exact}.hp-hero{background:var(--color-panel)!important}}
 .hp-foot .ft-id{color:var(--color-fg)}
 .hp-foot{border-top:3px double var(--hp-teal)}
 @media print{

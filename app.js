@@ -125,7 +125,7 @@ function rebuildRange(){
   const hl=ALLM.filter(x=>x.has).pop(),ft=$('#ft-last');if(ft&&hl)ft.textContent='(ข้อมูลล่าสุด: '+hl.full+' '+hl.year+')';
 }
 function buildChips(){
-  const chip=v=>'<button class="hp-chip'+(v.k==='NCD'?' ncd':'')+'" data-act="view" data-k="'+esc(v.k)+'" title="'+esc(v.t)+'" aria-pressed="false">'+esc(v.n)+'</button>';
+  const chip=v=>'<button class="hp-chip'+(v.k==='NCD'?' ncd':'')+'" style="--gc:'+gcol(v.k)+'" data-act="view" data-k="'+esc(v.k)+'" title="'+esc(v.t)+'" aria-pressed="false">'+esc(v.n)+'</button>';
   $('#hp-chips-a').innerHTML=VIEWS.filter(v=>v.grp!=='b').map(chip).join('');
   $('#hp-chips-b').innerHTML=VIEWS.filter(v=>v.grp==='b').map(chip).join('');
   $('#hp-fgb').hidden=S.mode==='sym';
@@ -246,7 +246,7 @@ function renderTicker(items){
   const len=items.reduce((a,i)=>a+i[1].length,0);
   host.style.setProperty('--tkd',Math.max(28,Math.round(len/5.2))+'s');
   host.classList.toggle('mv',fx());
-  t.innerHTML='<div class="tk-r">'+one+'</div>'+(fx()?'<div class="tk-r" aria-hidden="true">'+one+'</div>':'');
+  t.innerHTML='<div class="tk-r" tabindex="0">'+one+'</div>'+(fx()?'<div class="tk-r" aria-hidden="true">'+one+'</div>':'');
 }
 function tween(el,from,to,fmt,dur){
   const id=(el._tw=(el._tw||0)+1);const t0=performance.now();
@@ -979,7 +979,7 @@ function renderDrugs(){
   let h='<table><thead><tr>'+th('label','ชื่อยา / ความแรง')+th('cat','กลุ่ม')+'<th>หน่วย</th>'+th('tq','ปริมาณ')+th('tv','มูลค่า (บาท)')+th('tc','ต้นทุน (บาท)')+th('share','สัดส่วน')+'<th>แนวโน้ม 12 เดือน</th>'+th('d','เปลี่ยนแปลง')+(HASP?th('y','เทียบปีงบ '+(S.fy-1)):'')+'</tr></thead><tbody>';
   list.slice(0,S.limit).forEach(o=>{
     const x=o.x;const sh=scopeTot?o.tot/scopeTot:0;
-    h+='<tr data-act="detail" data-id="'+x.id+'"><td class="nm">'+esc(x.label)+(x.off?' <span class="hp-badge b-warn" title="ชื่อรายการระบุว่าไม่มีในบัญชียา/รพ. แต่ยังมีการจ่าย">นอกบัญชี?</span>':'')+'</td><td>'+esc(gshort(x))+'</td><td class="hp-mut">'+esc(x.unit)+'</td><td>'+nf(o.tq)+'</td><td>'+nf(o.tv)+'</td><td>'+nf(o.tc)+'</td><td>'+(sh>=.0005?pct(sh,1):'<0.1%')+'</td><td>'+spark(x[m].slice(0,AV),84,22)+'</td><td>'+(o.d==null?'—':deltaTag(o.d,true))+'</td>'+(HASP?'<td>'+(o.y==null?'—':deltaTag(o.y,true))+'</td>':'')+'</tr>';
+    h+='<tr data-act="detail" data-id="'+x.id+'"><td class="nm">'+esc(x.label)+(x.off?' <span class="hp-badge b-warn" title="ชื่อรายการระบุว่าไม่มีในบัญชียา/รพ. แต่ยังมีการจ่าย">นอกบัญชี?</span>':'')+'</td><td><i class="hp-gd" style="background:'+gcol(gk(x))+'"></i>'+esc(gshort(x))+'</td><td class="hp-mut">'+esc(x.unit)+'</td><td>'+nf(o.tq)+'</td><td>'+nf(o.tv)+'</td><td>'+nf(o.tc)+'</td><td>'+(sh>=.0005?pct(sh,1):'<0.1%')+'</td><td>'+spark(x[m].slice(0,AV),84,22)+'</td><td>'+(o.d==null?'—':deltaTag(o.d,true))+'</td>'+(HASP?'<td>'+(o.y==null?'—':deltaTag(o.y,true))+'</td>':'')+'</tr>';
   });
   h+='</tbody></table>';
   $('#dr-tbl').innerHTML=list.length?h:'<div class="hp-empty">ไม่พบรายการ</div>';
