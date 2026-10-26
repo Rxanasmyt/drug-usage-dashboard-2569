@@ -448,7 +448,7 @@ function renderOverview(){
   $('#ov-kpis').innerHTML=
     kpi('รวม'+MN[m]+' ('+esc(rangeLabel())+')',cnt('tot',tot,'b')+' <small>บาท</small>',(ci&&ci.mode==='yoy'?'เทียบปีงบ '+(S.fy-1)+' '+deltaTag(ci.d,true)+' · ':(pd!=null?'เทียบช่วงก่อนหน้า '+deltaTag(pd,true)+' · ':''))+(m==='v'?'ต้นทุน '+baht(ctot)+' บาท ('+(vtot?pct(ctot/vtot,0):'—')+')':'มูลค่า '+baht(vtot)+' บาท'),len>=2?spark(r,92,34):'')+
     k2+
-    kpi('แนวโน้มในช่วงที่เลือก','<span class="big">'+(di?deltaTag(di.d,true):'—')+'</span>',di?di.k+' เดือนท้าย เทียบ '+di.k+' เดือนแรก':'ต้องเลือกอย่างน้อย 2 เดือน')+
+    kpi('ปลายช่วงเทียบต้นช่วง','<span class="big">'+(di?deltaTag(di.d,true):'—')+'</span>',di?(!isFinite(di.d)?'เริ่มมีการใช้ในช่วงท้าย':(di.d>.03?'ปลายช่วงใช้มากกว่าต้นช่วง':di.d<-.03?'ปลายช่วงใช้น้อยกว่าต้นช่วง':'ปลายช่วงใกล้เคียงต้นช่วง'))+' · เฉลี่ย '+di.k+' เดือนท้าย เทียบ '+di.k+' เดือนแรก':'ต้องเลือกอย่างน้อย 2 เดือน')+
     (vtot>0?kpi('ต้นทุนเทียบมูลค่า','<span class="big">'+pct(ctot/vtot,0)+'</span>','ส่วนต่าง (มูลค่า − ต้นทุน) '+baht(vtot-ctot)+' บาท',ring(Math.min(1,ctot/vtot))):'');
   rev_ring();
   $('#ov-kpis2').innerHTML=
@@ -456,7 +456,7 @@ function renderOverview(){
     kpi('เดือนล่าสุดเทียบเดือนก่อน',mom==null?'—':deltaTag(mom,true),mom==null?'ต้องเลือกอย่างน้อย 2 เดือน':esc(mlab(S.to-1))+' เทียบ '+esc(mlab(S.to-2)))+
     kpi('ยาที่มีการใช้',cnt('act',act,'n')+' <small>/ '+nf(rows.length)+'</small>','สัดส่วน '+(allv?pct(tot/allv,1):'—')+' ของมูลค่าทั้งโรงพยาบาล');
   $('#ov-trend-h').innerHTML=esc(MN[m])+'รายเดือน: '+(di?(di.d>.03?'เพิ่มขึ้น':di.d<-.03?'ลดลง':'ใกล้เคียงเดิม')+(isFinite(di.d)&&Math.abs(di.d)>=.03?' '+pct(Math.abs(di.d),0):'')+' · ':'')+'สูงสุดเดือน '+esc(mlab(S.from-1+pk));
-  $('#ov-trend-n').textContent='แท่ง = '+MN[m]+' (บาท) · เส้นหนา = แนวโน้มเฉลี่ย 3 เดือน (ไม่สะดุดกับความผันผวนรายเดือน) · เส้นประ = ค่าเฉลี่ยในช่วงที่เลือก · แถบแดงจาง = เดือนสูงผิดปกติ · ลากเมาส์/นิ้วบนกราฟเพื่อเลือกช่วงเดือน · แท่งจางคือเดือนนอกช่วงที่เลือก';
+  $('#ov-trend-n').textContent='แท่ง = '+MN[m]+'รายเดือน · เส้นแซลมอน = แนวโน้มเฉลี่ย 3 เดือน · ลากบนกราฟเพื่อเลือกช่วงเดือน';
   S.target=loadT();const tgi=$('#hp-tg');if(tgi&&document.activeElement!==tgi)tgi.value=S.target?String(S.target):'';
   const pvS=HASP&&S.cmpm==='yoy'?pser(rows,m):null;
   barChart($('#ov-trend'),sv,{ct:S.ct,notes:eventNotes(rows,m),ma:true,prev:pvS,flags:flagsOf(sv),target:S.target,aria:'แนวโน้มรายเดือน',tip:i=>{
@@ -501,6 +501,8 @@ function renderOverview(){
   $('#ov-ins').innerHTML=ins.map((a,i)=>'<div style="--i:'+i+'" class="hp-in '+(a[0]==='info'?'':a[0])+'"><i></i><div><b>'+a[1]+'</b> · '+a[2]+'</div></div>').join('')+(insN>3?'<button class="hp-btn" data-act="insall">'+(S.insAll?'แสดงเฉพาะ 3 ข้อสำคัญ':'ดูเพิ่มอีก '+(insN-3)+' ข้อ')+'</button>':'');
   // top 10
   $('#ov-top-h').textContent='ยา 10 อันดับแรก ('+MN[m]+')';
+  {const gs=[];rank.slice(0,10).forEach(a=>{const c=gk(a.x);if(gs.indexOf(c)<0)gs.push(c);});const GD=S.mode==='sym'?symBy:catBy;
+   $('#ov-top-lg').innerHTML=gs.map(c=>'<span class="hp-gl"><i style="background:'+gcol(c)+'"></i>'+esc(GD[c]?GD[c].short:c)+'</span>').join('');}
   hbars($('#ov-top'),rank.slice(0,10).map(a=>({sp:a.x[m].slice(0,AV),dtag:(d=>d==null?'':deltaTag(d.d,true))(deltaInfo(a.x[m])),color:gcol(gk(a.x)),label:a.x.label,val:a.t,vtxt:baht(a.t),attr:'data-act="detail" data-id="'+a.x.id+'"',tip:a.x.label+'\n'+MN[m]+': '+nf(a.t)+' บาท ('+pct(a.t/tot,1)+' ของกลุ่ม)'})));
   // category
   const cs2=GR().map(c=>({c:c,t:sum(rg(series(rows.filter(x=>gk(x)===c.code),m)))})).filter(a=>a.t>0).sort((a,b)=>b.t-a.t);
@@ -562,6 +564,23 @@ function renderWaterfall(rows,m,di){
 
 /* ---------- race ---------- */
 const R={key:'',i:0,t:null,items:[]};
+const TOURS=[['#hp-hero-n','ตัวเลขใหญ่ = ยอดรวมของช่วงที่เลือก','ด้านล่างเป็นการเทียบกับปีงบก่อนช่วงเดียวกัน ▼ เขียว = ลดลง ▲ แดง = เพิ่มขึ้น'],
+ ['#ov-trend','กราฟรายเดือน','ชี้เมาส์หรือแตะแท่งเพื่อดูค่า เส้นแซลมอนคือแนวโน้ม ลากบนกราฟเพื่อเลือกช่วงเดือนได้'],
+ ['#ov-ins','ข้อสังเกตจากตัวเลข','สรุปเป็นข้อความ: ยาที่ดันค่าใช้จ่าย เดือนสูง-ต่ำสุด กดเพื่อดูรายละเอียด'],
+ ['#hp-tabs','เปลี่ยนมุมมองที่แท็บ','เทียบกลุ่มโรค · รายการยา · เปรียบเทียบยา · ความผิดปกติ ส่วนตัวกรองอยู่ในแถบ "ตัวกรอง" ด้านบน']];
+const TR={i:-1};
+function tourEnd(){const t=$('#hp-tour');if(t)t.hidden=true;$$('.tour-hl').forEach(e=>e.classList.remove('tour-hl'));TR.i=-1;try{localStorage.setItem('hp_tour','1');}catch(e){}}
+function tourShow(i){
+  if(i>=TOURS.length){tourEnd();return;}
+  if(S.tab!=='overview'||S.pres){S.tab='overview';S.pres=false;render();}
+  TR.i=i;$$('.tour-hl').forEach(e=>e.classList.remove('tour-hl'));
+  const el=$(TOURS[i][0]),t=$('#hp-tour');if(!el||!t){tourEnd();return;}
+  el.classList.add('tour-hl');try{el.scrollIntoView({block:'center',behavior:reduced()?'auto':'smooth'});}catch(e){}
+  $('#tt-t').textContent=TOURS[i][1];$('#tt-p').textContent=TOURS[i][2];$('#tt-n').textContent=(i+1)+' / '+TOURS.length;
+  const nb=$('[data-act=tournext]');if(nb)nb.textContent=i===TOURS.length-1?'เสร็จสิ้น':'ถัดไป →';
+  t.hidden=false;
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&TR.i>=0)tourEnd();});
 const SC={t:null,orig:null};
 function scStop(){if(SC.t){clearInterval(SC.t);SC.t=null;}const p=$('#sc-play');if(p)p.textContent='▶ เล่น';}
 function scSet(k){if(!SC.orig)SC.orig=[S.from,S.to];S.to=Math.max(S.from,Math.min(AV,k));anim='data';go();}
@@ -1151,6 +1170,9 @@ document.addEventListener('click',e=>{
   const a=el.dataset.act;
   if(a==='tab'){const o=['overview','groups','drugs','compare','alerts'],d=o.indexOf(el.dataset.t)-o.indexOf(S.tab);const r=$('#hp');if(r)r.style.setProperty('--dir',d<0?-1:1);S.tab=el.dataset.t;}
   else if(a==='view'){setView(el.dataset.k);}
+  else if(a==='tour'){tourShow(0);return;}
+  else if(a==='tournext'){tourShow(TR.i+1);return;}
+  else if(a==='tourskip'){tourEnd();return;}
   else if(a==='ct'){S.ct=el.dataset.v;}
   else if(a==='tmz'){S.tmz=el.dataset.k||null;}
   else if(a==='scplay'){scToggle();return;}
@@ -1239,7 +1261,7 @@ function reveal(){
   els.forEach((e,i)=>{e.dataset.rv='1';const r=e.getBoundingClientRect();if(r.top>vh*.95){e.classList.add('rv');e.style.setProperty('--d',(Math.min(i,4)*60)+'ms');io.observe(e);}});
   clearTimeout(rvT);rvT=setTimeout(()=>{$$('#hp .rv').forEach(e=>e.classList.add('in'));},3500);
 }
-let RTK=0;
+let RTK=0,TA=false;
 const defer=fn=>{const k=RTK;setTimeout(()=>{if(k===RTK)fn();},0);};
 function render(){
   if(!prep())return;RTK++;
@@ -1262,6 +1284,7 @@ function render(){
   else if(S.tab==='alerts')renderAlerts();
   countUps();
   tabInd();reveal();pills();
+  if(!TA){TA=true;let seen=false;try{seen=localStorage.getItem('hp_tour')==='1';}catch(e){}if(!seen)setTimeout(()=>{if(TR.i<0&&S.tab==='overview'&&!S.pres)tourShow(0);},4200);}
 }
 let rzT=null,LW=window.innerWidth;
 function onResize(){tabInd();clearTimeout(rzT);rzT=setTimeout(()=>{const w=window.innerWidth;if(w!==LW){LW=w;anim=null;if(ready)render();}},220);}

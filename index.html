@@ -624,9 +624,27 @@ body{background:radial-gradient(900px 520px at 100% -5%,color-mix(in srgb,var(--
 .hp-sp i{background:linear-gradient(90deg,var(--hp-teal),var(--hp-sky),var(--hp-violet),var(--hp-salmon))!important}
 .hp-hero h1{background:linear-gradient(100deg,var(--color-fg) 38%,var(--hp-teal) 80%,var(--hp-indigo))!important;-webkit-background-clip:text!important;background-clip:text!important}
 @media (max-width:700px){.hp-hero h1{background:none!important;color:var(--color-fg)!important}}
+
+/* ===== clarity: details, legend, tour ===== */
+.hp-how{margin:2px 0 8px;font-size:var(--cds-font-size-caption)}
+.hp-how summary{cursor:pointer;color:var(--hp-teal);font-weight:600;list-style:none;display:inline-block;padding:2px 0}
+.hp-how summary::-webkit-details-marker{display:none}
+.hp-how ul{margin:6px 0 0;padding:8px 14px 8px 28px;background:color-mix(in srgb,var(--hp-teal) 7%,var(--color-panel));border-radius:10px;line-height:1.7}
+.hp-gls{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.hp-gl{display:inline-flex;align-items:center;gap:6px}.hp-gl i{width:10px;height:10px;border-radius:3px;flex:none}
+.hp-tour{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);width:min(440px,calc(100vw - 24px));z-index:60;background:var(--color-panel);border:1px solid var(--hp-teal);border-radius:16px;padding:14px 16px;box-shadow:0 14px 40px rgba(0,40,40,.28)}
+.hp-tour[hidden]{display:none}
+.hp-tour b{display:block;font-size:1.05rem;margin-bottom:4px}
+.hp-tour p{margin:0 0 10px;line-height:1.6;color:var(--color-fg)}
+.hp-tour .tb{display:flex;gap:8px;align-items:center}.hp-tour .tb span{flex:1;color:var(--color-fg-muted);font-size:var(--cds-font-size-caption)}
+.hp-tour .pri{background:linear-gradient(135deg,#00777a,#00958f);color:#fff;border-color:transparent;font-weight:700}
+.tour-hl{outline:3px solid var(--hp-salmon);outline-offset:4px;border-radius:14px;transition:outline-color .3s}
+@media (prefers-reduced-motion:no-preference){.hp-ticker.mv .tk-w{animation-iteration-count:2}.tour-hl{animation:hpTour 1.6s ease-in-out infinite}@keyframes hpTour{50%{outline-color:color-mix(in srgb,var(--hp-salmon) 30%,transparent)}}}
+@media print{.hp-tour{display:none!important}}
 </style>
 <div id="hp" class="hp">
   <div class="hp-sp" aria-hidden="true"><i id="hp-spi"></i></div>
+  <div class="hp-tour" id="hp-tour" hidden role="dialog" aria-label="วิธีอ่าน dashboard"><b id="tt-t"></b><p id="tt-p"></p><div class="tb"><span id="tt-n"></span><button class="hp-btn" data-act="tourskip">ข้าม</button><button class="hp-btn pri" data-act="tournext">ถัดไป →</button></div></div>
   <header class="hp-hero">
     <div>
       <span class="hp-eyebrow">เภสัชกรรม โรงพยาบาลกรงปินัง จ.ยะลา · ปีงบประมาณ <span id="hp-fy-e">2568–2569</span></span>
@@ -644,7 +662,7 @@ body{background:radial-gradient(900px 520px at 100% -5%,color-mix(in srgb,var(--
     <button role="tab" data-act="tab" data-t="alerts">ความผิดปกติและข้อสังเกต</button>
   </nav>
   <div class="hp-ticker" id="hp-ticker" hidden role="region" aria-label="ไฮไลต์ข้อมูล"><div id="hp-tk" class="tk-w"></div></div>
-  <div class="hp-keybar" id="hp-keybar"><span class="hp-key"><span class="up-bad">▲ แดง = เพิ่มขึ้น/เกินเป้า</span><span class="dn-ok">▼ เขียว = ลดลง</span><span class="flat">เทา = ใกล้เคียงเดิม (±3%)</span></span><span class="hp-keyb"><button class="hp-btn" data-act="copy">คัดลอกสรุป</button><button class="hp-btn" data-act="pres">โหมดนำเสนอ</button><button class="hp-btn" data-act="print">พิมพ์ / PDF</button><button class="hp-btn" id="hp-fxb" data-act="fx" aria-pressed="true">✨ เอฟเฟกต์ภาพ: เปิด</button></span></div>
+  <div class="hp-keybar" id="hp-keybar"><span class="hp-key"><span class="up-bad">▲ แดง = เพิ่มขึ้น/เกินเป้า</span><span class="dn-ok">▼ เขียว = ลดลง</span><span class="flat">เทา = ใกล้เคียงเดิม (±3%)</span></span><span class="hp-keyb"><button class="hp-btn" data-act="copy">คัดลอกสรุป</button><button class="hp-btn" data-act="pres">โหมดนำเสนอ</button><button class="hp-btn" data-act="print">พิมพ์ / PDF</button><button class="hp-btn" data-act="tour">❓ วิธีอ่าน</button><button class="hp-btn" id="hp-fxb" data-act="fx" aria-pressed="true">✨ เอฟเฟกต์ภาพ: เปิด</button></span></div>
   <div class="hp-fbar" id="hp-fbar" hidden></div>
   <div class="hp-filters" id="hp-filters">
     <button class="hp-ftog" id="hp-ftog" data-act="tfil" aria-expanded="false" aria-controls="hp-filters"><span class="ic">⚙</span><span class="tx"><b>ตัวกรอง</b><span id="hp-ftxt"></span></span><span class="ch">▾</span></button>
@@ -691,12 +709,13 @@ body{background:radial-gradient(900px 520px at 100% -5%,color-mix(in srgb,var(--
     <div class="hp-kpis" id="ov-kpis"></div>
     <div class="hp-grid w2">
       <div class="hp-card"><h2 id="ov-trend-h">แนวโน้มรายเดือน</h2><p class="hp-note" id="ov-trend-n"></p>
+        <details class="hp-how"><summary>ℹ︎ อ่านกราฟนี้อย่างไร</summary><ul><li>แท่งจาง = เดือนนอกช่วงที่เลือก</li><li>เส้นประแนวนอน = ค่าเฉลี่ยของช่วงที่เลือก</li><li>เส้นประโค้ง = ปีงบก่อนช่วงเดียวกัน · พื้นแดงจาง = ใช้มากกว่าปีก่อน · พื้นเขียวจาง = น้อยกว่า</li><li>แถบแดงเข้ม และธง ▲▼ = เดือนที่สูงหรือต่ำผิดปกติเมื่อเทียบทั้งปี</li><li>ป้ายบนกราฟ เช่น "ราคา▼" "หยุดใช้" = เหตุการณ์ของยาที่มีผลต่อยอดมาก</li><li>ช่อง "เป้าหมาย" ไม่บังคับ ถ้ากรอกแท่งที่เกินเป้าจะเป็นสีแดง</li></ul></details>
         <div class="hp-seg hp-ct" id="ov-ct" role="group" aria-label="ชนิดกราฟ"><button data-act="ct" data-v="bar">แท่ง</button><button data-act="ct" data-v="line">เส้น</button><button data-act="ct" data-v="area">พื้นที่</button></div>
         <div class="hp-inl"><label class="hp-note" for="hp-tg">เป้าหมายต่อเดือน (บาท)</label><input id="hp-tg" type="search" inputmode="numeric" placeholder="ไม่บังคับ เช่น 800000" style="min-width:12rem;max-width:14rem"><span class="hp-note">เก็บในเบราว์เซอร์เครื่องนี้ แท่งที่เกินเป้าจะเป็นสีแดง</span></div><div class="hp-svg" id="ov-trend" style="min-height:260px"></div><div class="hp-lg" id="ov-trend-lg"></div></div>
       <div class="hp-card hp-stick"><h2>ข้อสังเกตจากตัวเลข</h2><p class="hp-note">สรุปจากตัวเลขตามตัวกรองที่เลือก เรียงข้อที่ควรสนใจก่อน</p><div class="hp-ins" id="ov-ins"></div></div>
     </div>
     <div class="hp-grid w2">
-      <div class="hp-card"><h2 id="ov-top-h">ยา 10 อันดับแรก</h2><p class="hp-note">กดที่แถวเพื่อดูแนวโน้มรายเดือนของยาตัวนั้น · สีแท่ง = กลุ่มยาของรายการนั้น</p><div id="ov-top"></div></div>
+      <div class="hp-card"><h2 id="ov-top-h">ยา 10 อันดับแรก</h2><p class="hp-note">กดที่แถวเพื่อดูแนวโน้มรายเดือนของยาตัวนั้น · สีแท่ง = กลุ่มยาของรายการนั้น</p><div id="ov-top"></div><div class="hp-gls" id="ov-top-lg" aria-label="สีตามกลุ่มยา"></div></div>
       <div class="hp-card"><h2 id="ov-cat-h">สัดส่วนตามกลุ่มยา</h2><p class="hp-note" id="ov-cat-n"></p><div id="ov-cat"></div></div>
     </div>
     <div class="hp-card hp-scrub"><h2>ไทม์ไลน์: ไล่ดูทีละเดือน</h2><p class="hp-note">ลากแถบหรือกด ▶ เพื่อดูการสะสมยอดเดือนต่อเดือน ทุกกราฟและตัวเลขด้านบนจะเปลี่ยนตาม</p>
