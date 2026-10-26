@@ -13,7 +13,7 @@ const GR=()=>S.mode==='sym'?SYMS:CATS;
 const gk=x=>S.mode==='sym'?x.sym:x.cat;
 const gdef=x=>(S.mode==='sym'?symBy:catBy)[gk(x)];
 let GI={};
-const gcol=code=>'color-mix(in srgb,var(--hp-a) '+(GI[code]||45)+'%,var(--color-bg))';
+const gcol=code=>{const i=GR().findIndex(c=>c.code===code);return 'var(--gp'+((i<0?0:i)%10)+')';};
 function computeGI(){
   const t=GR().map(c=>({c:c.code,v:sum(rg(series(D.filter(x=>gk(x)===c.code),S.metric)))})).sort((a,b)=>b.v-a.v);
   GI={};t.forEach((o,i)=>{GI[o.c]=Math.round(100-i*(62/Math.max(1,t.length-1)));});
@@ -30,7 +30,8 @@ const rgp=a=>a?a.slice(S.from-1,S.to):[];
 const pser=(rows,k)=>HASP?series(rows,'p'+k):null;
 const mlab=i=>MON[i]?MON[i].label:String(i+1);
 const rangeLabel=()=>S.from===S.to?mlab(S.from-1):mlab(S.from-1)+' – '+mlab(S.to-1);
-const colors=()=>dash.colors||[];
+const colors=()=>['var(--hp-teal)','var(--hp-aqua)','var(--hp-salmon)','var(--hp-amber)','var(--hp-indigo)','var(--hp-violet)'];
+const qual=()=>['var(--hp-teal)','var(--hp-salmon)','var(--hp-indigo)','var(--hp-amber)','var(--hp-violet)','var(--hp-sky)'];
 const C0=()=>colors()[0]||'var(--color-fg)';
 const bad=()=>S.metric==='v'||S.metric==='c';
 
@@ -504,7 +505,7 @@ function renderOverview(){
   // category
   const cs2=GR().map(c=>({c:c,t:sum(rg(series(rows.filter(x=>gk(x)===c.code),m)))})).filter(a=>a.t>0).sort((a,b)=>b.t-a.t);
   $('#ov-cat-h').textContent='สัดส่วนตามกลุ่มยา';
-  $('#ov-cat-n').textContent='ยิ่งสีเข้ม ยิ่งเป็นกลุ่มที่ใช้เงินมาก (สีเดียวกันทุกกราฟ) · กดเพื่อเลือกดูกลุ่มนั้น';
+  $('#ov-cat-n').textContent='แต่ละกลุ่มมีสีประจำตัว ใช้สีเดียวกันทุกกราฟ · เรียงตามมูลค่าจากมากไปน้อย · กดเพื่อเลือกดูกลุ่มนั้น';
   hbars($('#ov-cat'),cs2.slice(0,12).map(a=>{const gs=series(rows.filter(x=>gk(x)===a.c.code),m);return {sp:gs.slice(0,AV),dtag:(d=>d==null?'':deltaTag(d.d,true))(deltaInfo(gs)),label:a.c.short,val:a.t,vtxt:baht(a.t)+' · '+pct(a.t/tot,0),color:gcol(a.c.code),attr:'data-act="pickcat" data-k="'+esc(a.c.code)+'"',tip:a.c.name+'\n'+nf(a.t)+' บาท ('+pct(a.t/tot,1)+')'};}));
   $('#ov-more').hidden=!S.more;
   const mb=$('#ov-more-btn');if(mb)mb.textContent=S.more?'ซ่อนรายละเอียดเพิ่มเติม ▴':'ดูรายละเอียดเพิ่มเติม: แผนที่มูลค่า · เทียบก่อน-หลัง · อะไรทำให้ยอดเปลี่ยน · เล่นย้อนหลัง ▾';
@@ -1040,7 +1041,7 @@ function renderDetail(){
 /* ---------- compare ---------- */
 function renderCompare(){
   if(!S.cmpInit){S.cmpInit=true;if(!S.cmp.length)S.cmp=scope().slice().sort((p,q)=>sum(rg(q.v))-sum(rg(p.v))).slice(0,5).map(x=>x.id);}
-  const pal=colors();const list=S.cmp.map(id=>byId[id]).filter(Boolean);
+  const pal=qual();const list=S.cmp.map(id=>byId[id]).filter(Boolean);
   $('#cm-chips').innerHTML=list.map((x,i)=>'<span class="hp-cc"><i style="background:'+(pal[i%pal.length]||'var(--color-fg)')+'"></i>'+esc(x.label)+'<button data-act="cmprm" data-id="'+x.id+'" aria-label="เอาออก">×</button></span>').join('');
   const host=$('#cm-chart');
   if(!list.length){host.innerHTML='<div class="hp-empty">ยังไม่ได้เลือกยา ค้นหาชื่อยาด้านบน หรือกด “เติมยา 5 อันดับแรกของกลุ่มที่เลือก”</div>';$('#cm-tbl').innerHTML='';$('#cm-note').textContent='';return;}

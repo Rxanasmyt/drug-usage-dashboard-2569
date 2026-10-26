@@ -589,6 +589,41 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @keyframes hpSlideD{from{opacity:0;transform:translateX(calc(var(--dir,1)*22px))}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:no-preference){.hp.go .hp-sec{animation-name:hpSlideD}}
 .hp.hid .tk-w,.hp.hid .pl,.hp.hid .hp-badge,.hp.hid .hp-pulse,.hp.hid .hp-hero::before,.hp.far .tk-w,.hp.far .pl,.hp.far .hp-hero::before{animation-play-state:paused!important}
+
+/* ===== COLOR THEME (hospital palette, shared by artifact + PWA) ===== */
+.hp{--hp-teal:#00908f;--hp-aqua:#00a9ab;--hp-salmon:#e9806a;--hp-amber:#e8a62f;--hp-indigo:#5668d3;--hp-violet:#8a5fc4;--hp-sky:#2f9bd6;
+--gp0:#00908f;--gp1:#e9806a;--gp2:#5668d3;--gp3:#e0a526;--gp4:#8a5fc4;--gp5:#2f9bd6;--gp6:#b8479e;--gp7:#6c8a99;--gp8:#8a9a2f;--gp9:#a8745a;
+--color-bg:#f1f8f8;--color-fg:#14292b;--color-fg-muted:#557072;--color-panel:#ffffff;--color-border-line:#d3e4e4;--color-bad:#c62f2f;--color-ok:#2e9b4e;--color-warn:#c27a14;
+--cds-chart-grid:#e1ecec;--cds-chart-muted:#9db8b8;--cds-chart-reference:#5f8082;--cds-chart-axis:#9db8b8;--hp-bg1:#e6f4f4;--hp-bg2:#fbeee9}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .hp{--hp-teal:#3cc6c4;--hp-aqua:#5adbd8;--hp-salmon:#f4a58c;--hp-amber:#f3c25a;--hp-indigo:#8d9bf0;--hp-violet:#b794e8;--hp-sky:#68c0f0;
+--gp0:#3cc6c4;--gp1:#f4a58c;--gp2:#8d9bf0;--gp3:#f3c25a;--gp4:#b794e8;--gp5:#68c0f0;--gp6:#e48acb;--gp7:#9ab6c4;--gp8:#bccc5c;--gp9:#d9a186;
+--color-bg:#0c1a1b;--color-fg:#e6f2f2;--color-fg-muted:#92aeae;--color-panel:#132526;--color-border-line:#234040;--color-bad:#ff6b5f;--color-ok:#5bd68a;--color-warn:#f0a940;
+--cds-chart-grid:#1f3637;--cds-chart-muted:#527272;--cds-chart-reference:#86a6a6;--cds-chart-axis:#527272;--hp-bg1:#0f2a2b;--hp-bg2:#2a1a18}}
+:root[data-theme=dark] .hp{--hp-teal:#3cc6c4;--hp-aqua:#5adbd8;--hp-salmon:#f4a58c;--hp-amber:#f3c25a;--hp-indigo:#8d9bf0;--hp-violet:#b794e8;--hp-sky:#68c0f0;
+--gp0:#3cc6c4;--gp1:#f4a58c;--gp2:#8d9bf0;--gp3:#f3c25a;--gp4:#b794e8;--gp5:#68c0f0;--gp6:#e48acb;--gp7:#9ab6c4;--gp8:#bccc5c;--gp9:#d9a186;
+--color-bg:#0c1a1b;--color-fg:#e6f2f2;--color-fg-muted:#92aeae;--color-panel:#132526;--color-border-line:#234040;--color-bad:#ff6b5f;--color-ok:#5bd68a;--color-warn:#f0a940;
+--cds-chart-grid:#1f3637;--cds-chart-muted:#527272;--cds-chart-reference:#86a6a6;--cds-chart-axis:#527272;--hp-bg1:#0f2a2b;--hp-bg2:#2a1a18}
+body{background:radial-gradient(900px 520px at 100% -5%,color-mix(in srgb,var(--hp-salmon) 14%,transparent),transparent 60%),radial-gradient(900px 600px at -5% 0%,color-mix(in srgb,var(--hp-teal) 16%,transparent),transparent 60%),var(--color-bg,#f1f8f8)!important;background-attachment:fixed}
+.hp-hero{background:radial-gradient(80% 140% at 0% 0%,color-mix(in srgb,var(--hp-teal) 26%,var(--color-panel)) 0%,transparent 62%),radial-gradient(60% 120% at 100% 100%,color-mix(in srgb,var(--hp-salmon) 26%,var(--color-panel)) 0%,transparent 65%),radial-gradient(40% 80% at 60% 0%,color-mix(in srgb,var(--hp-amber) 16%,transparent),transparent 70%),var(--color-panel)!important;border-color:color-mix(in srgb,var(--hp-teal) 28%,var(--color-border-line))!important}
+.hp-tabs button[aria-selected=true]{background:linear-gradient(135deg,#00777a,#00958f)!important;color:#fff!important;box-shadow:0 4px 14px color-mix(in srgb,var(--hp-teal) 40%,transparent)!important}
+.hp-seg button[aria-pressed=true],.hp-chip[aria-pressed=true],.hp-filters .hp-chip[aria-pressed=true]{background:linear-gradient(135deg,color-mix(in srgb,var(--hp-teal) 24%,var(--color-panel)),color-mix(in srgb,var(--hp-aqua) 16%,var(--color-panel)))!important;border-color:var(--hp-teal)!important;color:var(--color-fg)!important;font-weight:700}
+.hp-kpi{--k:var(--hp-teal);background:linear-gradient(160deg,color-mix(in srgb,var(--k) 9%,var(--color-panel)),var(--color-panel) 62%)!important;border-color:color-mix(in srgb,var(--k) 22%,var(--color-border-line))!important}
+.hp-kpi:nth-child(6n+2){--k:var(--hp-indigo)}.hp-kpi:nth-child(6n+3){--k:var(--hp-salmon)}.hp-kpi:nth-child(6n+4){--k:var(--hp-amber)}.hp-kpi:nth-child(6n+5){--k:var(--hp-violet)}.hp-kpi:nth-child(6n+6){--k:var(--hp-sky)}
+.hp-kpi::after{background:linear-gradient(90deg,var(--k),transparent)!important;height:4px!important}
+.hp-kpi .l{color:color-mix(in srgb,var(--k) 62%,var(--color-fg))!important;font-weight:600}
+.hp-card h2::before,.hp-card>h2:first-child::before{background:linear-gradient(180deg,var(--hp-teal),var(--hp-aqua))}
+.hp-card:nth-of-type(4n+2) h2::before{background:linear-gradient(180deg,var(--hp-salmon),var(--hp-amber))!important}
+.hp-card:nth-of-type(4n+3) h2::before{background:linear-gradient(180deg,var(--hp-indigo),var(--hp-sky))!important}
+.hp-card:nth-of-type(4n) h2::before{background:linear-gradient(180deg,var(--hp-violet),var(--hp-salmon))!important}
+.hp-card{border-color:color-mix(in srgb,var(--hp-teal) 14%,var(--color-border-line))!important;box-shadow:0 1px 2px color-mix(in srgb,var(--color-fg) 6%,transparent),0 10px 28px color-mix(in srgb,var(--hp-teal) 8%,transparent)!important}
+.hp-gc{background:linear-gradient(180deg,color-mix(in srgb,var(--hp-teal) 5%,var(--color-panel)),var(--color-panel))}
+.hp-headline{box-shadow:0 6px 20px color-mix(in srgb,var(--hp-teal) 10%,transparent)}
+.hp-ftog,.hp-btn{border-color:color-mix(in srgb,var(--hp-teal) 25%,var(--color-border-line))}
+.hp-btn:hover{background:color-mix(in srgb,var(--hp-teal) 10%,var(--color-panel));border-color:var(--hp-teal)}
+.hp-ticker{border-color:color-mix(in srgb,var(--hp-teal) 24%,var(--color-border-line));background:linear-gradient(90deg,color-mix(in srgb,var(--hp-teal) 8%,var(--color-panel)),color-mix(in srgb,var(--hp-salmon) 8%,var(--color-panel)))}
+.hp-sp i{background:linear-gradient(90deg,var(--hp-teal),var(--hp-sky),var(--hp-violet),var(--hp-salmon))!important}
+.hp-hero h1{background:linear-gradient(100deg,var(--color-fg) 38%,var(--hp-teal) 80%,var(--hp-indigo))!important;-webkit-background-clip:text!important;background-clip:text!important}
+@media (max-width:700px){.hp-hero h1{background:none!important;color:var(--color-fg)!important}}
 </style>
 <div id="hp" class="hp">
   <div class="hp-sp" aria-hidden="true"><i id="hp-spi"></i></div>
@@ -661,7 +696,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <div class="hp-card hp-stick"><h2>ข้อสังเกตจากตัวเลข</h2><p class="hp-note">สรุปจากตัวเลขตามตัวกรองที่เลือก เรียงข้อที่ควรสนใจก่อน</p><div class="hp-ins" id="ov-ins"></div></div>
     </div>
     <div class="hp-grid w2">
-      <div class="hp-card"><h2 id="ov-top-h">ยา 10 อันดับแรก</h2><p class="hp-note">กดที่แถวเพื่อดูแนวโน้มรายเดือนของยาตัวนั้น</p><div id="ov-top"></div></div>
+      <div class="hp-card"><h2 id="ov-top-h">ยา 10 อันดับแรก</h2><p class="hp-note">กดที่แถวเพื่อดูแนวโน้มรายเดือนของยาตัวนั้น · สีแท่ง = กลุ่มยาของรายการนั้น</p><div id="ov-top"></div></div>
       <div class="hp-card"><h2 id="ov-cat-h">สัดส่วนตามกลุ่มยา</h2><p class="hp-note" id="ov-cat-n"></p><div id="ov-cat"></div></div>
     </div>
     <div class="hp-card hp-scrub"><h2>ไทม์ไลน์: ไล่ดูทีละเดือน</h2><p class="hp-note">ลากแถบหรือกด ▶ เพื่อดูการสะสมยอดเดือนต่อเดือน ทุกกราฟและตัวเลขด้านบนจะเปลี่ยนตาม</p>
