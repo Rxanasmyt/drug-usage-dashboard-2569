@@ -969,7 +969,7 @@ function drugRows(){
   return list;
 }
 function renderDrugs(){
-  renderScatter();
+  renderScatter();renderABC();
   const m=S.metric;const list=drugRows();
   {const rs=scope(),dd=deltaInfo(series(rs,m)),mv=movers(rs,m,makeCI(rs,m,dd)),t0=sum(rg(series(rs,m)));
    headline($('#dr-head'),toneOf(dd,bad()),'<span class="hp-hl-t">'+esc(view().n)+'</span> ใช้งาน '+nf(rs.filter(x=>sum(rg(x.v))>0).length)+' จาก '+nf(rs.length)+' รายการ'+(mv.up.length&&mv.up[0].dd>=Math.max(3000,t0*.01)?' · เพิ่มมากสุด: <b class="up-bad">'+esc(mv.up[0].x.name)+' +'+baht(mv.up[0].dd)+'</b>':'')+(mv.dn.length&&-mv.dn[0].dd>=Math.max(3000,t0*.01)?' · ลดมากสุด: <b class="dn-ok">'+esc(mv.dn[0].x.name)+' −'+baht(-mv.dn[0].dd)+'</b>':'')+' · กดหัวคอลัมน์เพื่อเรียง');}const scopeTot=sum(rg(series(scope(),m)));
@@ -985,6 +985,83 @@ function renderDrugs(){
   $('#dr-tbl').innerHTML=list.length?h:'<div class="hp-empty">ไม่พบรายการ</div>';
   $('#dr-more').innerHTML=list.length>S.limit?'<button class="hp-btn" data-act="more">แสดงเพิ่ม (อีก '+nf(list.length-S.limit)+' รายการ)</button><span class="hp-note">แสดง '+S.limit+' จาก '+nf(list.length)+' รายการ</span>':'';
 }
+
+
+function abcData(){
+  const a=scope().map(x=>({x:x,t:sum(rg(x.v))})).filter(o=>o.t>0).sort((p,q)=>q.t-p.t);
+  const T=sum(a.map(o=>o.t));let c=0;
+  a.forEach(o=>{const b=T?c/T:0;c+=o.t;o.cum=T?c/T:0;o.cls=b<.7?'A':b<.9?'B':'C';});
+  const g={A:{n:0,t:0},B:{n:0,t:0},C:{n:0,t:0}};a.forEach(o=>{g[o.cls].n++;g[o.cls].t+=o.t;});
+  return {a:a,T:T,g:g};
+}
+function renderABC(){
+  const host=$('#abc-body'),nn=$('#abc-n');if(!host)return;
+  const d=abcData(),N=d.a.length;
+  if(!N||!d.T){host.innerHTML='<div class="hp-empty">ไม่มีข้อมูลมูลค่าในช่วงที่เลือก</div>';nn.textContent='';return;}
+  nn.textContent=view().n+' · '+rangeLabel()+' · จัดกลุ่มตามมูลค่าสะสม: A = ยาที่รวมกันแล้วคิดเป็น 70% แรกของมูลค่า, B = 70–90%, C = ที่เหลือ (คำนวณจากมูลค่า ไม่ขึ้นกับตัวเลือกปริมาณ/ต้นทุน)';
+  const cl=[['A','ควบคุมใกล้ชิด · ทบทวนการใช้และราคาสม่ำเสมอ'],['B','ติดตามเป็นระยะ'],['C','จำนวนมากแต่มูลค่าน้อย · ควบคุมแบบง่าย']];
+  let st='<div class="abc-st">'+cl.map(k=>{const q=d.g[k[0]];return '<div class="abc-b abc-'+k[0]+'"><b><span class="abc-tag '+k[0]+'" style="display:inline-block;color:#fff">'+k[0]+'</span> '+k[1].split(' · ')[0]+'</b><span class="n">'+nf(q.n)+' รายการ</span><span>'+pct(q.n/N,0)+' ของรายการที่ใช้ · มูลค่า '+baht(q.t)+' บาท ('+pct(q.t/d.T,0)+')</span><span>'+(k[1].split(' · ')[1]||'')+'</span></div>';}).join('')+'</div>';
+  const bar=(f,lab)=>'<div class="abc-l">'+lab+'</div><div class="abc-bar" role="img" aria-label="'+lab+'">'+['A','B','C'].map(k=>'<i style="width:'+(f(k)*100).toFixed(2)+'%;background:'+({A:'#00777a',B:'#b7791f',C:'#9aa8a8'})[k]+'" title="'+k+' '+pct(f(k),0)+'"></i>').join('')+'</div>';
+  // pareto curve
+  const W=640,H=190,pl=38,pr=10,pt=10,pb=26,iw=W-pl-pr,ih=H-pt-pb;
+  const step=Math.max(1,Math.floor(N/160));let pts=[];for(let i=0;i<N;i+=step)pts.push([i,d.a[i].cum]);pts.push([N-1,1]);
+  const X=i=>pl+iw*((i+1)/N),Y=v=>pt+ih*(1-v);
+  const path=pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join('');
+  const iA=d.g.A.n,iB=d.g.A.n+d.g.B.n;
+  let sv='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="เส้นสะสมมูลค่าตามลำดับยา รายการ A '+d.g.A.n+' รายการคิดเป็น 70% ของมูลค่า" style="display:block;margin-top:10px">';
+  [0,.25,.5,.7,.9,1].forEach(v=>{sv+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="currentColor" stroke-opacity="'+(v===.7||v===.9?.35:.12)+'" '+(v===.7||v===.9?'stroke-dasharray="4 3"':'')+'/><text x="'+(pl-5)+'" y="'+(Y(v)+3.5)+'" text-anchor="end" font-size="10" fill="currentColor" opacity=".75">'+Math.round(v*100)+'%</text>';});
+  sv+='<rect x="'+pl+'" y="'+pt+'" width="'+(X(iA-1)-pl)+'" height="'+ih+'" fill="#00777a" opacity=".1"/><rect x="'+X(iA-1)+'" y="'+pt+'" width="'+(X(iB-1)-X(iA-1))+'" height="'+ih+'" fill="#b7791f" opacity=".1"/>';
+  sv+='<path d="'+path+'" fill="none" stroke="#00777a" stroke-width="2.4" stroke-linejoin="round"/>';
+  sv+='<text x="'+pl+'" y="'+(H-8)+'" font-size="10" fill="currentColor" opacity=".75">ยาอันดับ 1</text><text x="'+(W-pr)+'" y="'+(H-8)+'" text-anchor="end" font-size="10" fill="currentColor" opacity=".75">อันดับ '+nf(N)+'</text></svg>';
+  const top=d.a.filter(o=>o.cls==='A').slice(0,10);
+  let tb='<div class="hp-tw" style="max-height:none"><table><thead><tr><th style="text-align:left">ยากลุ่ม A (10 อันดับแรก)</th><th>มูลค่า (บาท)</th><th>สัดส่วน</th><th>สะสม</th></tr></thead><tbody>'+top.map(o=>'<tr data-act="detail" data-id="'+o.x.id+'"><td class="nm">'+esc(o.x.label)+'</td><td>'+nf(o.t)+'</td><td>'+pct(o.t/d.T,1)+'</td><td>'+pct(o.cum,0)+'</td></tr>').join('')+'</tbody></table></div>';
+  host.innerHTML=st+bar(k=>d.g[k].t/d.T,'สัดส่วนมูลค่า (A / B / C)')+bar(k=>d.g[k].n/N,'สัดส่วนจำนวนรายการ (A / B / C)')+sv+tb+'<p class="hp-note">กราฟ: แกนนอน = ลำดับยาเรียงตามมูลค่า, แกนตั้ง = มูลค่าสะสม · กดแถวเพื่อดูแนวโน้มรายเดือนของยาตัวนั้น · ยากลุ่ม A '+nf(d.g.A.n)+' รายการ จากทั้งหมด '+nf(N)+' รายการ เท่านั้น แต่คิดเป็น 70% ของมูลค่า</p>';
+}
+/* ---------- executive summary (A4) ---------- */
+let EXO=null;
+function execHTML(){
+  const rows=scope(),m='v',sv=series(rows,m),r=rg(sv),tot=sum(r),di=deltaInfo(sv),ci=makeCI(rows,m,di),mv=movers(rows,m,ci);
+  const cost=sum(rg(series(rows,'c'))),allv=sum(rg(series(D,m))),A=computeAlerts(rows),ab=abcData();
+  const cs=GR().map(c=>({c:c,t:sum(rg(series(rows.filter(x=>gk(x)===c.code),m)))})).filter(a=>a.t>0).sort((a,b)=>b.t-a.t).slice(0,5);
+  const sig=Math.max(3000,tot*.005);
+  const chg=ci&&isFinite(ci.d)?(ci.d>0?'+':'')+pct(ci.d,1):'—';
+  const chgCls=ci&&isFinite(ci.d)?(ci.d>.03?'ex-up':ci.d<-.03?'ex-dn':''):'';
+  const logo=($('.lh-mark img')||{}).src||'';
+  const li=(arr,f)=>arr.length?arr.map(f).join(''):'<li><b>ไม่มีรายการเด่นในช่วงนี้</b></li>';
+  // bar chart
+  const W=700,H=140,pl=6,pb=34,pt=16,n=sv.length,mx=Math.max.apply(null,r.concat([1])),bw=(W-pl*2)/Math.max(r.length,1);
+  let g='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="มูลค่าการใช้ยารายเดือน" style="display:block">';
+  const lab=v=>(v/1e6).toFixed(2);
+  r.forEach((v,i)=>{const bh=(H-pt-pb)*v/mx,x=pl+i*bw+bw*.14,w=bw*.72,y=H-pb-bh;const mm=MON[S.from-1+i];
+    g+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+bh.toFixed(1)+'" fill="#00908f" rx="2"/><text x="'+(x+w/2).toFixed(1)+'" y="'+(y-3).toFixed(1)+'" font-size="9.5" text-anchor="middle" fill="#12302f">'+lab(v)+'</text><text x="'+(x+w/2).toFixed(1)+'" y="'+(H-pb+13)+'" font-size="10" text-anchor="middle" fill="#46605f">'+esc(mm?mm.short:'')+'</text>';});
+  g+='<text x="'+(W/2)+'" y="'+(H-3)+'" font-size="9.5" text-anchor="middle" fill="#46605f">มูลค่ารายเดือน (ล้านบาท)</text></svg>';
+  const now=new Date();let ds='';try{ds=now.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});}catch(e){ds=now.toISOString().slice(0,10);}
+  const nar=[
+   'ช่วง '+esc(rangeLabel())+' ('+esc(view().n)+') มีมูลค่าการใช้ยารวม <b>'+baht(tot)+' บาท</b> เฉลี่ยเดือนละ '+baht(r.length?tot/r.length:0)+' บาท'+(allv&&S.view!=='ALL'?' คิดเป็น '+pct(tot/allv,0)+' ของมูลค่าทั้งหมดที่มีข้อมูล':'')+'.',
+   ci&&isFinite(ci.d)?((ci.mode==='yoy'?'เมื่อเทียบกับปีงบประมาณ '+(S.fy-1)+' ช่วงเดียวกัน':'เมื่อเทียบ '+ci.labB+' กับ '+ci.labA)+' มูลค่า <b class="'+chgCls+'">'+(ci.d>.03?'เพิ่มขึ้น':ci.d<-.03?'ลดลง':'ใกล้เคียงเดิม')+' '+pct(Math.abs(ci.d),1)+'</b>.'):'',
+   ab.T?'ยากลุ่ม A (ควบคุมใกล้ชิด) มี <b>'+nf(ab.g.A.n)+' รายการ</b> จากที่ใช้ทั้งหมด '+nf(ab.a.length)+' รายการ แต่คิดเป็น 70% ของมูลค่า.':'',
+   'รายการที่ควรทบทวน: พุ่งผิดปกติ '+A.spike.length+' รายการ · แนวโน้มเพิ่ม '+A.rise.length+' รายการ · นอกบัญชียังจ่าย '+A.off.length+' รายการ.'
+  ].filter(Boolean).map(t=>'<p class="ex-p">'+t+'</p>').join('');
+  return '<div class="ex-sheet" role="document"><div class="ex-h"><div style="display:flex;align-items:center;gap:12px">'+(logo?'<img alt="โลโก้โรงพยาบาลกรงปินัง" src="'+logo+'">':'')+'<div><b>'+'กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค'+'</b><div style="font-size:.82rem;color:#3f5a59">โรงพยาบาลกรงปินัง · จังหวัดยะลา</div></div></div><div class="r">'+esc(($('#lh-last')||{}).textContent||'')+'<br>จัดทำเมื่อ '+esc(ds)+'</div></div>'+
+   '<div class="ex-t">สรุปผู้บริหาร: ปริมาณและมูลค่าการใช้ยา</div><div class="ex-sub">'+esc(view().n)+' · '+esc(rangeLabel())+' · ปีงบประมาณ '+S.fy+'</div>'+
+   '<div class="ex-k"><div><small>มูลค่ารวม</small><b>'+baht(tot)+'</b><em>บาท</em></div><div><small>เทียบ'+(ci&&ci.mode==='yoy'?'ปีงบ '+(S.fy-1):'ต้นช่วง')+'</small><b class="'+chgCls+'">'+chg+'</b><em>ช่วงเดียวกัน</em></div><div><small>เฉลี่ยต่อเดือน</small><b>'+baht(r.length?tot/r.length:0)+'</b><em>บาท</em></div><div><small>ต้นทุนรวม</small><b>'+baht(cost)+'</b><em>บาท'+(tot?' · '+pct(cost/tot,0)+' ของมูลค่า':'')+'</em></div></div>'+
+   '<div class="ex-s">แนวโน้มรายเดือน</div>'+g+
+   '<div class="ex-s">ข้อสังเกตสำคัญ</div>'+nar+
+   '<div class="ex-g"><div><div class="ex-s">ยาที่ดันค่าใช้จ่ายขึ้น (5 อันดับ)</div><ol>'+li(mv.up.filter(o=>o.dd>=sig).slice(0,5),o=>'<li><b>'+esc(o.x.name)+'</b><span class="ex-up">+'+baht(o.dd)+'</span></li>')+'</ol></div>'+
+   '<div><div class="ex-s">ยาที่ลดลงมากสุด (5 อันดับ)</div><ol>'+li(mv.dn.filter(o=>-o.dd>=sig).slice(0,5),o=>'<li><b>'+esc(o.x.name)+'</b><span class="ex-dn">−'+baht(-o.dd)+'</span></li>')+'</ol></div></div>'+
+   '<div class="ex-s">กลุ่มยาที่มีมูลค่าสูงสุด</div><div class="ex-g"><ol>'+li(cs.slice(0,3),a=>'<li><b>'+esc(a.c.short)+'</b><span>'+pct(a.t/(tot||1),0)+'</span></li>')+'</ol><ol start="4">'+(cs.length>3?cs.slice(3).map(a=>'<li><b>'+esc(a.c.short)+'</b><span>'+pct(a.t/(tot||1),0)+'</span></li>').join(''):'')+'</ol></div>'+
+   '<div class="ex-sig"><div>ผู้จัดทำ</div><div>ผู้ตรวจสอบ</div><div>หัวหน้ากลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</div></div>'+
+   '<div class="ex-f">แหล่งข้อมูล: รายงานสรุปการใช้เวชภัณฑ์ยา (ที่บันทึกจ่ายยา) รายเดือน · ปีงบประมาณเริ่ม ต.ค. · มูลค่า = ปริมาณที่จ่าย × ราคา, ต้นทุน = ปริมาณ × ราคาทุน · แสดงตามตัวกรองที่เลือกในขณะพิมพ์</div></div>';
+}
+function openExec(){
+  if(!EXO){EXO=document.createElement('div');EXO.id='hp-exec';EXO.hidden=true;EXO.setAttribute('role','dialog');EXO.setAttribute('aria-modal','true');EXO.setAttribute('aria-label','สรุปผู้บริหาร');document.body.appendChild(EXO);
+    EXO.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.x==='p'){try{window.print();}catch(err){}}else if(b.dataset.x==='c')closeExec();else if(e.target===EXO)closeExec();});
+    EXO.addEventListener('click',e=>{if(e.target===EXO)closeExec();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&EXO&&!EXO.hidden)closeExec();});}
+  EXO.innerHTML='<div class="ex-bar"><button class="pri" data-x="p">พิมพ์ / บันทึกเป็น PDF</button><button data-x="c">ปิด</button></div>'+execHTML();
+  EXO.hidden=false;document.body.classList.add('exm');EXO.scrollTop=0;const b=EXO.querySelector('button');if(b)b.focus();
+}
+function closeExec(){if(EXO)EXO.hidden=true;document.body.classList.remove('exm');}
 
 function renderScatter(){
   const host=$('#sc'),rows=scope();
@@ -1190,6 +1267,7 @@ document.addEventListener('click',e=>{
   else if(a==='storyn'){prGo(1);return;}
   else if(a==='storyp'){prGo(-1);return;}
   else if(a==='print'){try{window.print();}catch(err){}return;}
+  else if(a==='exec'){openExec();return;}
   else if(a==='metric'){S.metric=el.dataset.m;}
   else if(a==='fx'){FXON=!FXON;try{localStorage.setItem(FXK,FXON?'1':'0');}catch(err){}if(FXON){anim='tab';INTRO=false;}clrSpot();}
   else if(a==='tfil'){S.fopen=!S.fopen;}

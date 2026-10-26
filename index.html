@@ -667,10 +667,57 @@ body{background:var(--color-bg)!important}
 .hp-ticker{background:var(--color-panel);border-color:var(--color-border-line)}
 .hp-headline{box-shadow:none}
 .hp-sp i{background:var(--hp-teal)!important}
+
+/* ABC */
+.abc-st{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+@media(max-width:560px){.abc-st{grid-template-columns:1fr}}
+.abc-b{padding:12px 14px;border-radius:10px;border:1px solid var(--color-border-line);border-top:4px solid var(--c);background:var(--color-panel)}
+.abc-b b{display:block;font-size:1.05rem}.abc-b .n{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+.abc-b span{display:block;color:var(--color-fg-muted);font-size:var(--cds-font-size-caption);line-height:1.55}
+.abc-bar{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:6px 0 2px;background:var(--color-border-line)}
+.abc-bar i{display:block;height:100%}
+.abc-l{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);margin-top:8px}
+.abc-A{--c:#00777a}.abc-B{--c:#b7791f}.abc-C{--c:#7a8a8a}
+.abc-tag{display:inline-block;min-width:1.6em;text-align:center;border-radius:4px;padding:0 5px;color:#fff;font-weight:700;font-size:.8em}
+.abc-tag.A{background:#00777a}.abc-tag.B{background:#8a5a12}.abc-tag.C{background:#5b6b6b}
+/* exec summary */
+#hp-exec{position:fixed;inset:0;z-index:2147483000;background:rgba(10,30,30,.6);overflow:auto;padding:16px;font-family:inherit;color:#12302f}
+#hp-exec[hidden]{display:none}
+#hp-exec .ex-bar{max-width:794px;margin:0 auto 10px;display:flex;gap:8px;justify-content:flex-end}
+#hp-exec .ex-bar button{font:inherit;padding:8px 16px;border-radius:8px;border:1px solid #00777a;background:#fff;color:#00595b;cursor:pointer;font-weight:600}
+#hp-exec .ex-bar button.pri{background:#00777a;color:#fff}
+#hp-exec .ex-sheet{max-width:794px;margin:0 auto;background:#fff;padding:26px 30px;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.35);line-height:1.55}
+.ex-h{display:flex;justify-content:space-between;align-items:center;gap:14px;border-bottom:3px double #00908f;padding-bottom:10px}
+.ex-h img{height:44px;width:auto;display:block}
+.ex-h .r{text-align:right;font-size:.82rem;color:#3f5a59}
+.ex-t{font-size:1.45rem;font-weight:700;margin:14px 0 2px;color:#0b3d3c}
+.ex-sub{font-size:.9rem;color:#3f5a59;margin-bottom:12px}
+.ex-k{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}
+.ex-k div{border:1px solid #cfdcdb;border-top:3px solid #00908f;border-radius:6px;padding:8px 10px}
+.ex-k small{display:block;font-size:.74rem;color:#46605f}.ex-k b{font-size:1.2rem;font-variant-numeric:tabular-nums}.ex-k em{display:block;font-style:normal;font-size:.74rem;color:#46605f}
+.ex-s{font-size:1rem;font-weight:700;color:#00595b;margin:14px 0 4px;border-left:4px solid #e9806a;padding-left:8px}
+.ex-g{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ex-g ol{margin:0;padding-left:1.3em;font-size:.88rem}.ex-g li{display:flex;justify-content:space-between;gap:8px}
+.ex-g li b{font-weight:600;flex:1}
+.ex-up{color:#b3261e;font-weight:600}.ex-dn{color:#1f7a3a;font-weight:600}
+.ex-p{font-size:.92rem;margin:3px 0}
+.ex-sig{display:flex;justify-content:space-around;gap:20px;margin-top:26px;font-size:.88rem;text-align:center}
+.ex-sig div{flex:1;border-top:1px solid #12302f;padding-top:4px}
+.ex-f{margin-top:14px;border-top:1px solid #cfdcdb;padding-top:6px;font-size:.74rem;color:#46605f}
+@media(max-width:600px){.ex-k{grid-template-columns:1fr 1fr}.ex-g{grid-template-columns:1fr}#hp-exec .ex-sheet{padding:16px}.ex-h img{height:34px}}
+@media print{
+ body.exm>*:not(#hp-exec){display:none!important}
+ #hp-exec{position:static!important;background:#fff!important;padding:0!important;overflow:visible!important}
+ #hp-exec .ex-bar{display:none!important}
+ #hp-exec .ex-sheet{box-shadow:none!important;max-width:none!important;padding:0!important;border-radius:0!important}
+ .ex-s,.ex-k div,.ex-g>div{break-inside:avoid}
+ .ex-t{margin-top:8px}.ex-s{margin:9px 0 3px}.ex-p{font-size:.86rem;margin:2px 0}.ex-g ol{font-size:.82rem}.ex-h img{height:38px}.ex-sig{margin-top:18px}.ex-f{margin-top:8px}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 .hp-foot .ft-id{color:var(--color-fg)}
 .hp-foot{border-top:3px double var(--hp-teal)}
 @media print{
- @page{size:A4;margin:12mm 12mm 16mm;@bottom-center{content:"โรงพยาบาลกรงปินัง · กลุ่มงานเภสัชกรรม · หน้า " counter(page) " / " counter(pages);font-size:9pt;color:#555}}
+ @page{size:A4;margin:12mm 12mm 16mm;@bottom-center{content:"โรงพยาบาลกรงปินัง · กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค · หน้า " counter(page) " / " counter(pages);font-size:9pt;color:#555}}
  .hp-lh{display:flex!important;break-after:avoid}
  body{background:#fff!important}
  .hp-card,.hp-kpi,.hp-hero{break-inside:avoid;box-shadow:none!important}
@@ -685,7 +732,7 @@ body{background:var(--color-bg)!important}
   <div class="hp-tour" id="hp-tour" hidden role="dialog" aria-label="วิธีอ่าน dashboard"><b id="tt-t"></b><p id="tt-p"></p><div class="tb"><span id="tt-n"></span><button class="hp-btn" data-act="tourskip">ข้าม</button><button class="hp-btn pri" data-act="tournext">ถัดไป →</button></div></div>
   <div class="hp-lh" role="banner">
     <div class="lh-l"><span class="lh-mark"><img alt="โลโก้โรงพยาบาลกรงปินัง" width="180" height="42" src="data:image/png;base64,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"></span>
-      <div class="lh-n"><b>กลุ่มงานเภสัชกรรม</b><span>โรงพยาบาลกรงปินัง · จังหวัดยะลา</span></div></div>
+      <div class="lh-n"><b>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</b><span>โรงพยาบาลกรงปินัง · จังหวัดยะลา</span></div></div>
     <div class="lh-r"><b>รายงานสรุปการใช้ยาและเวชภัณฑ์</b><span id="lh-fy"></span><span id="lh-last"></span></div>
   </div>
   <header class="hp-hero">
@@ -705,7 +752,7 @@ body{background:var(--color-bg)!important}
     <button role="tab" data-act="tab" data-t="alerts">ความผิดปกติและข้อสังเกต</button>
   </nav>
   <div class="hp-ticker" id="hp-ticker" hidden role="region" aria-label="ไฮไลต์ข้อมูล"><div id="hp-tk" class="tk-w"></div></div>
-  <div class="hp-keybar" id="hp-keybar"><span class="hp-key"><span class="up-bad">▲ แดง = เพิ่มขึ้น/เกินเป้า</span><span class="dn-ok">▼ เขียว = ลดลง</span><span class="flat">เทา = ใกล้เคียงเดิม (±3%)</span></span><span class="hp-keyb"><button class="hp-btn" data-act="copy">คัดลอกสรุป</button><button class="hp-btn" data-act="pres">โหมดนำเสนอ</button><button class="hp-btn" data-act="print">พิมพ์ / PDF</button><button class="hp-btn" data-act="tour">วิธีอ่าน</button><button class="hp-btn" id="hp-fxb" data-act="fx" aria-pressed="true">✨ เอฟเฟกต์ภาพ: เปิด</button></span></div>
+  <div class="hp-keybar" id="hp-keybar"><span class="hp-key"><span class="up-bad">▲ แดง = เพิ่มขึ้น/เกินเป้า</span><span class="dn-ok">▼ เขียว = ลดลง</span><span class="flat">เทา = ใกล้เคียงเดิม (±3%)</span></span><span class="hp-keyb"><button class="hp-btn" data-act="copy">คัดลอกสรุป</button><button class="hp-btn" data-act="pres">โหมดนำเสนอ</button><button class="hp-btn" data-act="exec">สรุปผู้บริหาร (A4)</button><button class="hp-btn" data-act="print">พิมพ์ / PDF</button><button class="hp-btn" data-act="tour">วิธีอ่าน</button><button class="hp-btn" id="hp-fxb" data-act="fx" aria-pressed="true">✨ เอฟเฟกต์ภาพ: เปิด</button></span></div>
   <div class="hp-fbar" id="hp-fbar" hidden></div>
   <div class="hp-filters" id="hp-filters">
     <button class="hp-ftog" id="hp-ftog" data-act="tfil" aria-expanded="false" aria-controls="hp-filters"><span class="ic" aria-hidden="true">▾</span><span class="tx"><b>ตัวกรอง</b><span id="hp-ftxt"></span></span><span class="ch">▾</span></button>
@@ -786,6 +833,7 @@ body{background:var(--color-bg)!important}
 
   <section class="hp-sec" id="hp-drugs" hidden>
     <div id="dr-head"></div>
+    <div class="hp-card" id="abc-card"><h2>การวิเคราะห์ ABC (Pareto) ตามมูลค่า</h2><p class="hp-note" id="abc-n"></p><div id="abc-body"></div></div>
     <div class="hp-card"><h2 id="sc-h">มูลค่าเทียบปริมาณ รายตัว</h2><p class="hp-note" id="sc-n"></p><div class="hp-svg" id="sc" style="min-height:260px"></div></div>
     <div class="hp-card">
       <div class="hp-inl" style="justify-content:space-between">
@@ -827,7 +875,7 @@ body{background:var(--color-bg)!important}
   </section>
 
   <footer class="hp-foot" id="hp-foot">
-    <p class="ft-id"><b>จัดทำโดย</b> กลุ่มงานเภสัชกรรม โรงพยาบาลกรงปินัง จังหวัดยะลา · <b>แหล่งข้อมูล</b> รายงานสรุปการใช้เวชภัณฑ์ยา (ที่บันทึกจ่ายยา) รายเดือน</p>
+    <p class="ft-id"><b>จัดทำโดย</b> กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค โรงพยาบาลกรงปินัง จังหวัดยะลา · <b>แหล่งข้อมูล</b> รายงานสรุปการใช้เวชภัณฑ์ยา (ที่บันทึกจ่ายยา) รายเดือน</p>
     <p class="ft-id"><b>ข้อควรทราบ</b> ตัวเลขในรายงานนี้ใช้เพื่อประกอบการบริหารจัดการยาและเวชภัณฑ์ การนำไปอ้างอิงอย่างเป็นทางการควรตรวจสอบกับรายงานต้นฉบับ ส่วน "ความผิดปกติ" เป็นสัญญาณให้ตรวจสอบ ไม่ใช่ข้อสรุปทางคลินิก</p>
     <p><b>นิยาม</b> มูลค่า = คอลัมน์ “มูลค่า(บาท)” ต้นทุน = “ต้นทุน(บาท)” ปริมาณ = “จำนวน” ตามหน่วยนับของยาแต่ละรายการ (รวมข้ามยาต่างชนิดไม่ได้ จึงแสดงปริมาณเป็นรายตัว) จำนวนครั้งที่จ่าย = คอลัมน์ “รายการ” ในรายงาน</p>
     <p><b>การจัดกลุ่ม</b> จัดกลุ่มโรคจากชื่อและข้อบ่งใช้หลักของยาแต่ละรายการ ยาใช้ร่วมหลายโรค (เช่น Seretide, Symbicort, Berodual, Salbutamol NB) แยกเป็น “COPD/หอบหืด (ใช้ร่วม)” และนับรวมในทั้งสองคลินิกเมื่อเลือกดู จึงผลรวมของ COPD กับหอบหืดจะซ้ำกัน ยาบางรายการอาจใช้ต่างจากข้อบ่งใช้หลัก (เช่น propranolol, calcium carbonate, sodium bicarbonate) ควรให้เภสัชกรทบทวน</p>
