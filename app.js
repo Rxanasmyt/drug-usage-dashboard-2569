@@ -192,7 +192,7 @@ function odo(el,to,from){
     if(/[0-9]/.test(c)){const pc=fs[i-off],p=/[0-9]/.test(pc||'')?+pc:0;
       h+='<span class="od" aria-hidden="true"><span class="od-s" data-t="'+(10+(+c))+'" style="transform:translateY(-'+p+'em);transition-delay:'+(k*.1).toFixed(2)+'s">'+col+'</span></span>';k++;}
     else h+='<span aria-hidden="true">'+(c===' '?'&nbsp;':c)+'</span>';}
-  el.setAttribute('aria-label',ts);el.innerHTML=h;
+  el.setAttribute('role','img');el.setAttribute('aria-label',ts);el.innerHTML=h;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{el.querySelectorAll('.od-s').forEach(n=>{n.style.transform='translateY(-'+n.dataset.t+'em)';});}));
 }
 function pills(){
